@@ -1,9 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { createContext, useContext, useEffect, useState } from "react";
 import { FirebaseUser, useFirebaseAuth } from "../lib/firebase";
+import { client } from "../lib/sanity";
 
 const AuthUserContext = createContext({
-  authUser: { uid: "", email: "" },
+  authUser: {
+    firebaseId: "",
+    email: "",
+    alias: "",
+    profileImage: "",
+    hederaAccount: "",
+  },
   loading: false,
   signInWithPassword: (email: string, password: string) => {},
   createUserWithPassword: (email: string, password: string) => {},
@@ -16,7 +23,15 @@ const AuthUserContext = createContext({
 export function AuthUserProvider({ children }: { children: any }) {
   const auth = useFirebaseAuth();
   const [firebaseUser, setFirebaseUser] = useState(
-    auth.authUser ? auth.authUser : { uid: "", email: "" }
+    auth.authUser
+      ? auth.authUser
+      : {
+          firebaseId: "",
+          email: "",
+          alias: "",
+          profileImage: "",
+          hederaAccount: "",
+        }
   );
 
   const updateFirebaseUser = (user: FirebaseUser) => {
@@ -32,15 +47,37 @@ export function AuthUserProvider({ children }: { children: any }) {
       const sesionUser: any = JSON.parse(usrString);
       if (sesionUser) {
         console.log(sesionUser);
-        setFirebaseUser({
-          uid: sesionUser.uid,
-          email: sesionUser.email,
+
+        const query = `
+        *[_type=="account" && firebaseId=="${sesionUser.uid}"]{
+          alias,
+          email,
+          firebaseId,
+          alias,
+          profileImage,
+          hederaAccount
+        }
+        `;
+
+        let resultUser;
+        client.fetch(query).then((res) => {
+          console.log(res);
+          if (res) {
+            resultUser = {
+              firebaseId: sesionUser.firebaseId,
+              email: sesionUser.email,
+              alias: res[0].alias,
+              profileImage: res[0].profileImg,
+              hederaAccount: res[0].hederaAccount,
+            };
+            setFirebaseUser(resultUser);
+          }
         });
       }
     } else {
       console.log("NO USER");
     }
-  }, [firebaseUser.uid]);
+  }, [firebaseUser.firebaseId]);
   return (
     <AuthUserContext.Provider
       value={{

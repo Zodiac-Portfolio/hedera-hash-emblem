@@ -27,19 +27,22 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export type FirebaseUser = {
-  uid: string;
+  firebaseId: string;
   email: string;
+  alias: string;
+  profileImage: string;
+  hederaAccount: string;
 };
 
-const formatAuthUser = (user: FirebaseUser) => ({
-  uid: user.uid,
-  email: user.email,
-});
+const formatAuthUser = (user: FirebaseUser) => user;
 
 function useFirebaseAuth() {
   const [authUser, setAuthUser] = useState<FirebaseUser>({
-    uid: "",
+    firebaseId: "",
     email: "",
+    alias: "",
+    profileImage: "",
+    hederaAccount: "",
   });
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -63,7 +66,13 @@ function useFirebaseAuth() {
 
   const authStateChanged = async (authState: any) => {
     if (!authState) {
-      setAuthUser({ uid: "", email: "" });
+      setAuthUser({
+        firebaseId: "",
+        email: "",
+        alias: "",
+        profileImage: "",
+        hederaAccount: "",
+      });
       setLoading(false);
       return;
     }

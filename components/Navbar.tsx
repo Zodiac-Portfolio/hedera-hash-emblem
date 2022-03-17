@@ -57,7 +57,7 @@ export default function Navbar(props: {
             <div className="">
               <RiAccountCircleFill className="text-3xl" />
             </div>
-            <div>{authUser.uid !== "" && "Antoni"}</div>
+            {authUser.firebaseId !== "" && <div>{authUser.alias}</div>}
           </button>
           <button
             onClick={props.handleShowConnectModal}

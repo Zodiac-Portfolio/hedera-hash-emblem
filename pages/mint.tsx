@@ -76,7 +76,7 @@ function Mint() {
   useEffect(() => {
     if (router.pathname !== "/") {
       if (!authUser) router.push("/auth");
-      if (!loading && authUser.uid === "") router.push("/auth");
+      if (!loading && authUser.firebaseId === "") router.push("/auth");
     }
   }, [authUser, loading]);
 

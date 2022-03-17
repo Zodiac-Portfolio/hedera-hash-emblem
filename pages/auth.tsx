@@ -9,6 +9,7 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthProvider";
+import { client } from "../lib/sanity";
 
 export default function Auth() {
   const router = useRouter();
@@ -28,10 +29,20 @@ export default function Auth() {
       email,
       password
     );
-    updateFirebaseUser({
-      uid: userCreated.user.uid,
-      email: userCreated.user.email ? userCreated.user.email : "",
-    });
+    const doc = {
+      _type: "account",
+      firebaseId: userCreated.user.uid,
+      email: email,
+      alias: "HshUser 1",
+      profileImage: "https://avatars.dicebear.com/api/adventurer/2.svg",
+      hederaAccount: "",
+    };
+    const createdDoc = await client.create(doc);
+    console.log(createdDoc);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { _id, _createdAt, _rev, _type, _updatedAt, ...restData } =
+      createdDoc;
+    updateFirebaseUser(restData);
     router.push("/mint");
   };
   const requestSignIn = async () => {
@@ -47,10 +58,31 @@ export default function Auth() {
           email,
           password
         );
-        updateFirebaseUser({
-          uid: userCreated.user.uid,
-          email: userCreated.user.email ? userCreated.user.email : "",
-        });
+
+        const query = `
+        *[_type=="account" && firebaseId=="${userCreated.user.uid}"]{
+          alias,
+          email,
+          firebaseId,
+          alias,
+          profileImage,
+          hederaAccount
+        }
+        `;
+
+        let resultUser;
+        const sanityAccount = await client.fetch(query);
+        if (sanityAccount) {
+          resultUser = {
+            firebaseId: sanityAccount[0].firebaseId,
+            email: email,
+            alias: sanityAccount[0].alias,
+            profileImage: sanityAccount[0].profileImg,
+            hederaAccount: sanityAccount[0].hederaAccount,
+          };
+          updateFirebaseUser(resultUser);
+        }
+
         return userCreated;
       })
 
@@ -62,7 +94,7 @@ export default function Auth() {
 
   useEffect(() => {
     console.log(authUser);
-    if (authUser.uid !== "") {
+    if (authUser.firebaseId !== "") {
       console.log(authUser);
       router.push("/");
     }
@@ -95,6 +127,7 @@ export default function Auth() {
               <div className="block text-gray-500 text-md font-bold mb-2">
                 Password
               </div>
+
               <input
                 className="shadow appearance-none border border-red-400 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
                 id="password"
@@ -103,9 +136,6 @@ export default function Auth() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="******************"
               />
-              <p className="text-red-500 text-sm italic">
-                Please choose a password.
-              </p>
             </div>
             <div className="flex items-center justify-between">
               <button
