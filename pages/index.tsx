@@ -1,4 +1,3 @@
-import { getAuth } from "firebase/auth";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import BasicModal from "../components/BasicModal";
