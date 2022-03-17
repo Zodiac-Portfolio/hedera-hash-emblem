@@ -72,9 +72,9 @@ function App() {
       <div className="w-full flex flex-col h-full items-center text-center justify-evenly">
         <div className="text-white flex justify-center items-center w-full">
           <p className="webtitle">
-            The Hashgrapgh NFT Ecosystem
+            Hashgrapgh RPG NFT Ecosystem
             <span>Hash Emblem</span>
-            &mdash; Fight agains War &mdash;
+            &mdash; Fight against War &mdash;
           </p>
         </div>
         <div className="flex flex-wrap w-full gap-10 items-center justify-center">
