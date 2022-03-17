@@ -22,7 +22,7 @@ function ConnectionModal(props: PropsType) {
   };
   const { connect } = useHashConnect();
   useEffect(() => {
-    if (props.walletData.accountIds.length > 0) {
+    if (props.walletData.accountId) {
       props.closeModal();
     }
 
@@ -53,7 +53,7 @@ function ConnectionModal(props: PropsType) {
             <div className="relative  inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-fit">
               <div className="bg-gray-900 text-white flex-col items-center px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full sm:mx-0 sm:h-10 sm:w-10">
                     <Image
                       className="rounded-full"
                       alt="hashIcon"
@@ -77,7 +77,7 @@ function ConnectionModal(props: PropsType) {
                         transactions inside the Hash-Emblem ecosystem
                         <br></br>
                         <button
-                          className="underline text-indigo-400"
+                          className="underline text-orange-400"
                           onClick={() =>
                             window.open(
                               "https://chrome.google.com/webstore/detail/hashpack/gjagmgiddbbciopjhllkdnddhcglnemk"
@@ -96,18 +96,6 @@ function ConnectionModal(props: PropsType) {
                       width={128}
                       height={128}
                       layout={"fixed"}
-                      src="https://play-lh.googleusercontent.com/X3vvVu9eWCg2JOTUm_ZcPEMo2mt4pmv5dq1fvrOUzSoeDEF3h1iYFFUwdFbn_y02-JU"
-                      alt="qr"
-                    />
-                    <div className="flec flex-col">
-                      <p> Scan Qr with App </p>
-                    </div>
-                  </div>
-                  <div className="flex sm:flex-row md:flex-col items-center gap-4 my-5">
-                    <Image
-                      width={128}
-                      height={128}
-                      layout={"fixed"}
                       src="https://lh3.googleusercontent.com/11gZzwVrl8X2eoCbag1y5_hhyUqMKxG-zfDThmczUD7TwlX6HS0207EqyKGcz-FY1ZtDrWBwtNIG5VMlp-f6jkniYQ=w128-h128-e365-rj-sc0x00ffffff"
                       alt="qr"
                     />
@@ -115,7 +103,7 @@ function ConnectionModal(props: PropsType) {
                       <button
                         onClick={() => connect()}
                         type="button"
-                        className="justify-center rounded-md border border-transparent shadow-sm px-2 py-1 bg-indigo-600 bg-opacity-20 text-gray-600 cursor-not-allowed text-base font-medium   sm:w-auto sm:text-sm"
+                        className="justify-center rounded-md border border-transparent shadow-sm px-2 py-1 bg-orange-900 bg-opacity-20 text-gray-600 cursor-not-allowed text-base font-medium   sm:w-auto sm:text-sm"
                       >
                         Connect to Extension
                       </button>
@@ -126,7 +114,7 @@ function ConnectionModal(props: PropsType) {
                     <button
                       type="button"
                       onClick={handleCopy}
-                      className="justify-center rounded-md border border-transparent shadow-sm px-2 py-1 bg-indigo-400 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:w-auto sm:text-sm"
+                      className="justify-center rounded-md border border-transparent shadow-sm px-2 py-1 bg-orange-700 text-base font-medium text-white hover:bg-orange-700 focus:outline-none sm:w-auto sm:text-sm"
                     >
                       Copy Pairing String
                     </button>
@@ -138,7 +126,7 @@ function ConnectionModal(props: PropsType) {
                 <button
                   type="button"
                   onClick={props.closeModal}
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                 >
                   Close
                 </button>

@@ -18,6 +18,13 @@ import axios from "axios";
 import { MintItem } from "../pages";
 import { client } from "../lib/sanity";
 
+const HASPACK_METADATA = {
+  name: "HashPack",
+  description: "An example wallet",
+  icon: "https://www.hashpack.app/img/logo.svg",
+  publicKey: "6aea08ac-346f-4a4b-940e-1994ff6a4e1a",
+  url: "chrome&#38;&#35;38&#59;&#38;&#35;35&#59;38&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;35&#38;&#35;59&#59;45&#38;&#35;38&#59;&#38;&#35;35&#59;59&#38;&#35;59&#59;extension&#38;&#35;38&#59;&#38;&#35;35&#59;38&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;35&#38;&#35;59&#59;58&#38;&#35;38&#59;&#38;&#35;35&#59;59&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;38&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;35&#38;&#35;59&#59;47&#38;&#35;38&#59;&#38;&#35;35&#59;59&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;38&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;35&#38;&#35;59&#59;47&#38;&#35;38&#59;&#38;&#35;35&#59;59&#38;&#35;59&#59;gjagmgiddbbciopjhllkdnddhcglnemk",
+};
 const NFT_COLLECTION = "0.0.30977681";
 const SUPPLY_KEY =
   "54266676e59b36ec7c2617e26578377bc183777c1326c45bc3e72f7c7fdc2111";
@@ -99,7 +106,7 @@ export interface SaveData {
   pairedAccounts: string[];
   netWork?: string;
   id?: string;
-  accountIds: string[];
+  accountId: string;
 }
 
 const getNFTInfo = async (): Promise<NFTInfoObject[]> => {
@@ -174,7 +181,7 @@ const INITIAL_SAVE_DATA: SaveData = {
   privateKey: "",
   pairedAccounts: [],
   pairedWalletData: null,
-  accountIds: [],
+  accountId: "",
 };
 
 const APP_CONFIG: HashConnectTypes.AppMetadata = {
@@ -211,7 +218,7 @@ export const HashConnectAPIContext =
     hashConnect: new HashConnect(true),
     walletData: INITIAL_SAVE_DATA,
     netWork: "testnet",
-    installedExtensions: null,
+    installedExtensions: HASPACK_METADATA,
     buildMintNftTransaction: () => new Promise<void>(() => {}),
     associateCollection: () => new Promise<void>(() => {}),
     nftInfo: null,
@@ -250,7 +257,7 @@ export default function HashConnectProvider({
 
   const sendNft = async (_saveData: SaveData | null) => {
     const nftInfoQuery = await getNFTInfo();
-    const account = _saveData?.accountIds[0];
+    const account = _saveData?.accountId;
 
     if (!account) {
       // eslint-disable-next-line no-throw-literal
@@ -283,7 +290,7 @@ export default function HashConnectProvider({
     _saveData: SaveData | null,
     _detailItem: MintItem | null
   ) => {
-    const account = _saveData?.accountIds[0];
+    const account = _saveData?.accountId;
 
     if (!account) {
       // eslint-disable-next-line no-throw-literal
@@ -358,7 +365,7 @@ export default function HashConnectProvider({
     } */
 
   const associateCollection = async () => {
-    const signingAcct = saveData?.accountIds[0];
+    const signingAcct = saveData?.accountId;
     const assTrans = new TokenAssociateTransaction()
       .setAccountId(AccountId.fromString(signingAcct))
       .setTokenIds([TokenId.fromString(NFT_COLLECTION)]);
@@ -373,7 +380,7 @@ export default function HashConnectProvider({
   };
 
   const buildMintNftTransaction = async () => {
-    const signingAcct = saveData.accountIds[0];
+    const signingAcct = saveData.accountId;
     const trans = new TransferTransaction()
       .addHbarTransfer(signingAcct, new Hbar(-1))
       .addHbarTransfer("0.0.30909227", new Hbar(1));
@@ -387,7 +394,7 @@ export default function HashConnectProvider({
 
   //? Initialize the package in mount
   const initializeHashConnect = async () => {
-    const saveData = INITIAL_SAVE_DATA;
+    const _saveData = INITIAL_SAVE_DATA;
     const localData = loadLocalData();
     try {
       if (!localData) {
@@ -395,21 +402,18 @@ export default function HashConnectProvider({
 
         //first init and store the private for later
         const initData = await hashConnect.init(metaData ?? APP_CONFIG);
-        saveData.privateKey = initData.privKey;
+        _saveData.privateKey = initData.privKey;
 
         //then connect, storing the new topic for later
         const state = await hashConnect.connect();
-        saveData.topic = state.topic;
+        _saveData.topic = state.topic;
 
         //generate a pairing string, which you can display and generate a QR code from
-        saveData.pairingString = hashConnect.generatePairingString(
+        _saveData.pairingString = hashConnect.generatePairingString(
           state,
           netWork,
-          debug ?? false
+          false
         );
-
-        //find any supported local wallets
-        hashConnect.findLocalWallets();
       } else {
         if (debug) console.log("====Local data found====", localData);
         //use loaded data for initialization + connection
@@ -442,7 +446,11 @@ export default function HashConnectProvider({
     SetSaveData((prevSaveData) => {
       prevSaveData.pairedWalletData = metadata;
       prevSaveData.privateKey = localData.privateKey;
-      return { ...prevSaveData, ...restData };
+      return {
+        ...prevSaveData,
+        ...restData,
+        accountId: restData.accountIds[0],
+      };
     });
     const dataToSave = JSON.stringify({
       ...localData.data,
@@ -499,35 +507,19 @@ export default function HashConnectProvider({
     //Intialize the setup
     initializeHashConnect();
 
-    // Attach event handlers
     hashConnect.additionalAccountResponseEvent.on(
       additionalAccountResponseEventHandler
     );
     hashConnect.foundExtensionEvent.on(foundExtensionEventHandler);
 
     hashConnect.pairingEvent.on(pairingEventHandler);
-
     hashConnect.transactionResponseEvent.on(transactionResponseHandler);
-
-    return () => {
-      // Detach existing handlers
-      hashConnect.additionalAccountResponseEvent.off(
-        additionalAccountResponseEventHandler
-      );
-      hashConnect.foundExtensionEvent.off(foundExtensionEventHandler);
-      hashConnect.pairingEvent.off(pairingEventHandler);
-      hashConnect.transactionResponseEvent.off(transactionResponseHandler);
-    };
+    // Attach event handlers
   }, []);
 
   const connect = () => {
-    if (installedExtensions) {
-      if (debug) console.log("Pairing String::", saveData.pairingString);
-      hashConnect.connectToLocalWallet(saveData.pairingString);
-    } else {
-      if (debug) console.log("====No Extension is not in browser====");
-      return "wallet not installed";
-    }
+    if (debug) console.log("Pairing String::", saveData.pairingString);
+    hashConnect.connectToLocalWallet(saveData.pairingString);
   };
 
   return (
