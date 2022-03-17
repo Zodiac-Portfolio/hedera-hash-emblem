@@ -1,10 +1,10 @@
-import { getAuth } from "firebase/auth";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import BasicModal from "../components/BasicModal";
 import ConnectionModal from "../components/ConnectionModal";
 import MintCard from "../components/MintCard";
 import Navbar from "../components/Navbar";
+import { useAuth } from "../context/AuthProvider";
 import { useHashConnect } from "../context/HashConnectAPIProvider";
 import { client } from "../lib/sanity";
 
@@ -16,8 +16,7 @@ export type MintItem = {
   supply: number;
 };
 
-function App() {
-  const router = useRouter();
+function Mint() {
   const { walletData, buildMintNftTransaction } = useHashConnect();
   const [availibleForMint, setAvailibleForMint] = useState<MintItem[]>([]);
   const [showMintModal, setShowMintModal] = useState(false);
@@ -69,6 +68,18 @@ function App() {
       setAvailibleForMint(res);
     });
   }, []);
+
+  const { authUser, loading } = useAuth();
+  const router = useRouter();
+
+  // Listen for changes on loading and authUser, redirect if needed
+  useEffect(() => {
+    if (router.pathname !== "/") {
+      if (!authUser) router.push("/auth");
+      if (!loading && authUser.uid === "") router.push("/auth");
+    }
+  }, [authUser, loading]);
+
   return (
     <div className="flex flex-col w-screen h-screen  gap-10">
       <Navbar handleShowConnectModal={() => handleShowConnectModal()} />
@@ -81,32 +92,17 @@ function App() {
           </p>
         </div>
 
-        {walletData.accountId ? (
-          <div className="flex flex-wrap w-full gap-10 items-center justify-center">
-            {availibleForMint?.map((item) => {
-              return (
-                <MintCard
-                  key={Math.random() * 1000}
-                  item={item}
-                  handleShowModal={() => handleShowModal(item)}
-                />
-              );
-            })}
-          </div>
-        ) : (
-          <div className="text-white flex flex-col justify-center items-center w-2/3 lg:w-1/2">
-            <p className="start_journey_text">
-              Join the decentralized RPG War ecosystem, and compete with users
-              along the world and be the first to find the Hash Emblem{" "}
-            </p>
-            <p
-              onClick={() => router.push("/auth")}
-              className="start_journey cursor-pointer"
-            >
-              Start
-            </p>
-          </div>
-        )}
+        <div className="flex flex-wrap w-full gap-10 items-center justify-center">
+          {availibleForMint?.map((item) => {
+            return (
+              <MintCard
+                key={Math.random() * 1000}
+                item={item}
+                handleShowModal={() => handleShowModal(item)}
+              />
+            );
+          })}
+        </div>
       </div>
       <BasicModal
         mintAction={() => buildMintNftTransaction()}
@@ -123,4 +119,4 @@ function App() {
   );
 }
 
-export default App;
+export default Mint;

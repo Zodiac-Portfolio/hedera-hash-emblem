@@ -19,9 +19,10 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "lib/sanity.js",
-    "lib/sanity.js",
-    "components/Navbar.tsx"
+    "**/*.jsx",
+    "lib/firebase.js",
+    "lib/firebase.js",
+    "lib/firebase.js"
   ],
   "exclude": ["node_modules"]
 }

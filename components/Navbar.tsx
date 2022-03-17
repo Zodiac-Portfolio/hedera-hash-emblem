@@ -7,25 +7,32 @@ import {
   RiMoneyDollarCircleFill,
   RiAccountCircleFill,
 } from "react-icons/ri";
+import { useRouter } from "next/router";
+import { useAuth } from "../context/AuthProvider";
 
 export default function Navbar(props: {
   handleShowConnectModal:
     | React.MouseEventHandler<HTMLButtonElement>
     | undefined;
 }) {
+  const router = useRouter();
   const { walletData } = useHashConnect();
+  const { authUser } = useAuth();
 
   return (
     <div className="p-5 sticky h-[100px] w-full bg-[#111827] text-white justify-between flex items-center">
-      <div className="flex items-center gap-5">
+      <div
+        onClick={() => router.push("/")}
+        className="cursor-pointer flex items-center gap-5"
+      >
         <RiOutletFill className="text-3xl" />
         <div className="upercase">Hash Emblem</div>
       </div>
 
       <div className="flex flex-shrink-0 items-center jusify-center w-fit gap-20">
-        <div className="flex items-center text-orange-800 gap-3">
-          <RiLuggageCartLine className="text-xl" />
-          <div>Market</div>
+        <div className="flex items-center text-orange-700 gap-3">
+          <RiLuggageCartLine className="text-xl uppercase" />
+          <div>Mint</div>
         </div>
         <div className="flex items-center text-gray-800 gap-3">
           <RiFlaskFill className="text-xl" />
@@ -50,6 +57,7 @@ export default function Navbar(props: {
             <div className="">
               <RiAccountCircleFill className="text-3xl" />
             </div>
+            <div>{authUser.uid !== "" && "Antoni"}</div>
           </button>
           <button
             onClick={props.handleShowConnectModal}
