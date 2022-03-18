@@ -22,7 +22,7 @@ type PropsType = {
 };
 
 function ProfileModal(props: PropsType) {
-  const { walletData } = useHashConnect();
+  const { walletData, connect } = useHashConnect();
   const handleSignOut = async () => {
     //delete from localstorage
     localStorage.removeItem(
@@ -82,7 +82,10 @@ function ProfileModal(props: PropsType) {
                     </div>
                   </div>
                   {walletData.accountId == "" ? (
-                    <button className="flex w-fit justify-between cursor-pointer hover:bg-orange-800 px-5 py-4 items-center text-white  bg-gray-700 rounded-xl p-2">
+                    <button
+                      onClick={() => connect()}
+                      className="flex w-fit justify-between cursor-pointer hover:bg-orange-800 px-5 py-4 items-center text-white  bg-gray-700 rounded-xl p-2"
+                    >
                       <div className="flex flex-col">
                         <button className="flex gap-4 ">
                           Link your Wallet!
