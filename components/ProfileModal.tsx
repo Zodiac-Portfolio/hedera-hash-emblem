@@ -92,7 +92,7 @@ function ProfileModal(props: PropsType) {
                   ) : (
                     <div className="flex w-fit justify-between px-5 py-4 items-center text-white  bg-gray-700 rounded-xl p-2">
                       <div className="flex flex-col">
-                        <div className="flex">$11.79</div>
+                        <div className="flex">$ 11.79</div>
                         <div className="flex">58.736 HBAR (ℏ)</div>
                       </div>
                     </div>
