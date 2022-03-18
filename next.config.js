@@ -6,6 +6,7 @@ module.exports = {
       "ipfs.io",
       "lh3.googleusercontent.com",
       "play-lh.googleusercontent.com",
+      "avatars.dicebear.com",
     ],
   },
   reactStrictMode: true,

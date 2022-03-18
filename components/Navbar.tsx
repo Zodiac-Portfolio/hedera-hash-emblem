@@ -1,13 +1,9 @@
 import React from "react";
 import { useHashConnect } from "../context/HashConnectAPIProvider";
-import {
-  //RiLuggageCartLine,
-  RiOutletFill,
-  //RiMoneyDollarCircleFill,
-  RiAccountCircleFill,
-} from "react-icons/ri";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthProvider";
+import Image from "next/image";
+import { RiAccountCircleFill } from "react-icons/ri";
 //import Link from "next/link";
 
 export default function Navbar(props: {
@@ -19,7 +15,7 @@ export default function Navbar(props: {
     | undefined;
 }) {
   const router = useRouter();
-  const { walletData } = useHashConnect();
+  /*   const { walletData } = useHashConnect(); */
   const { authUser } = useAuth();
 
   return (
@@ -28,8 +24,14 @@ export default function Navbar(props: {
         onClick={() => router.push("/")}
         className="cursor-pointer flex items-center gap-5"
       >
-        <RiOutletFill className="text-3xl" />
-        <div className="upercase">Hash Emblem</div>
+        <Image
+          className="rounded-full"
+          alt="hashIcon"
+          width={64}
+          height={64}
+          src="https://ipfs.io/ipfs/QmZ1nzKzG3YEq2GW3Zmuv2osgbdAN8Jori7nE5fxMCBtLM"
+        />{" "}
+        <div className="text-xl uppercase text-gray-300">Hash Emblem</div>
       </div>
 
       <div className="flex flex-shrink- items-center jusify-center  gap-20">
@@ -49,28 +51,35 @@ export default function Navbar(props: {
           </>
         )} */}
       </div>
-
-      {walletData.accountId ? (
-        <div className="text-2xl">
-          <p>Account: {walletData.accountId} </p>
-        </div>
-      ) : (
-        <div className="flex gap-10">
-          <button
-            onClick={
-              authUser.firebaseId !== ""
-                ? props.handleShowProfileModal
-                : props.handleShowConnectModal
-            }
-            className="flex items-center gap-3 first:hover:flex"
-          >
-            <div className="">
-              <RiAccountCircleFill className="text-3xl" />
+      <div className="flex gap-10">
+        <button
+          onClick={
+            authUser.firebaseId !== ""
+              ? props.handleShowProfileModal
+              : props.handleShowConnectModal
+          }
+          className="flex items-center gap-3 first:hover:flex"
+        >
+          <div className="">
+            {authUser.profileImage ? (
+              <img
+                className="rounded-full"
+                alt="hashIcon"
+                width={64}
+                height={64}
+                src={authUser.profileImage}
+              />
+            ) : (
+              <RiAccountCircleFill className="text-5xl" />
+            )}
+          </div>
+          {authUser.firebaseId !== "" && (
+            <div className="text-lg uppercase text-gray-400">
+              {authUser.alias}
             </div>
-            {authUser.firebaseId !== "" && <div>{authUser.alias}</div>}
-          </button>
-        </div>
-      )}
+          )}
+        </button>
+      </div>
     </div>
   );
 }

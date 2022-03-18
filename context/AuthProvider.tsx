@@ -40,8 +40,10 @@ export function AuthUserProvider({ children }: { children: any }) {
     const usrString = window.localStorage.getItem(
       "firebase:authUser:AIzaSyB5yY8odWKLfi53qzc77YxL7FLmQAZAJRc:[DEFAULT]"
     );
+
     if (usrString) {
       const sesionUser: any = JSON.parse(usrString);
+      console.log(sesionUser);
       if (sesionUser) {
         const query = `
         *[_type=="account" && firebaseId=="${sesionUser.uid}"]{
@@ -57,11 +59,12 @@ export function AuthUserProvider({ children }: { children: any }) {
         let resultUser;
         client.fetch(query).then((res) => {
           if (res) {
+            console.log(res);
             resultUser = {
               firebaseId: sesionUser.firebaseId,
               email: sesionUser.email,
               alias: res[0].alias,
-              profileImage: res[0].profileImg,
+              profileImage: res[0].profileImage,
               hederaAccount: res[0].hederaAccount,
             };
             setFirebaseUser(resultUser);

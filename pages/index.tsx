@@ -66,40 +66,42 @@ function App() {
         handleShowConnectModal={() => setShowConnectionModal(true)}
       />
 
-      <div className="w-full  flex flex-col h-full items-center justify-evenly text-center  gap-10 overflow-x-hidden">
-        <div className="text-white flex justify-center items-center w-full">
-          <p className="webtitle">
-            Hashgrapgh RPG NFT Ecosystem
-            <span>Hash Emblem</span>
-            &mdash; Fight against War &mdash;
-          </p>
+      <div className="w-full h-full overflow-hidden  ">
+        <div className="w-full h-full box-content overflow-y-scroll  pr-[17px] flex flex-col  items-center text-center  gap-10 overflow-x-hidden">
+          <div className="text-white flex justify-center items-center w-full">
+            <p className="webtitle">
+              Hashgrapgh RPG NFT Ecosystem
+              <span>Hash Emblem</span>
+              &mdash; Fight against War &mdash;
+            </p>
+          </div>
+          {authUser.firebaseId === "" ? (
+            <div className=" text-white flex-col justify-center items-center w-2/3 lg:w-1/3">
+              <p className="start_journey_text">
+                Join the decentralized RPG War ecosystem, competing with users
+                along the world to find the Hash Emblem
+              </p>
+              <p
+                onClick={() => setShowConnectionModal(true)}
+                className="start_journey cursor-pointer"
+              >
+                Start
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-wrap w-full gap-10 items-center justify-center">
+              {availibleForMint?.map((item) => {
+                return (
+                  <MintCard
+                    key={Math.random() * 1000}
+                    item={item}
+                    handleShowModal={() => handleShowMintModal(item)}
+                  />
+                );
+              })}
+            </div>
+          )}
         </div>
-        {authUser.firebaseId === "" ? (
-          <div className=" text-white flex-col justify-center items-center w-2/3 lg:w-1/3">
-            <p className="start_journey_text">
-              Join the decentralized RPG War ecosystem, competing with users
-              along the world to find the Hash Emblem
-            </p>
-            <p
-              onClick={() => setShowConnectionModal(true)}
-              className="start_journey cursor-pointer"
-            >
-              Start
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-wrap w-full gap-10 items-center justify-center">
-            {availibleForMint?.map((item) => {
-              return (
-                <MintCard
-                  key={Math.random() * 1000}
-                  item={item}
-                  handleShowModal={() => handleShowMintModal(item)}
-                />
-              );
-            })}
-          </div>
-        )}
       </div>
 
       <ConnectionModal
@@ -116,6 +118,8 @@ function App() {
       <ProfileModal
         open={showProfileModal}
         closeModal={() => setShowProfileModal(false)}
+        user={authUser}
+        myInventoy={[]}
         walletData={walletData}
       />
     </div>
