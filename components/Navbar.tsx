@@ -1,5 +1,4 @@
 import React from "react";
-import { useHashConnect } from "../context/HashConnectAPIProvider";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthProvider";
 import Image from "next/image";
