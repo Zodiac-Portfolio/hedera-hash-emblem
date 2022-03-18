@@ -415,7 +415,7 @@ export default function HashConnectProvider({
           false
         );
 
-        await hashConnect.findLocalWallets();
+        hashConnect.findLocalWallets();
       } else {
         if (debug) console.log("====Local data found====", localData);
         //use loaded data for initialization + connection
