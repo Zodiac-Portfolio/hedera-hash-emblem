@@ -1,4 +1,5 @@
 import { getAuth } from "firebase/auth";
+import Image from "next/image";
 import React from "react";
 import { RiCloseCircleFill } from "react-icons/ri";
 import { SaveData, useHashConnect } from "../context/HashConnectAPIProvider";
@@ -61,7 +62,7 @@ function ProfileModal(props: PropsType) {
                 <div className="flex w-full gap-10 justify-between px-5 py-7 items-center text-white  bg-gray-800 rounded-xl p-2">
                   <div className="flex gap-10">
                     <div className="flex items-center gap-3 first:hover:flex">
-                      <div className="">
+                      <div className="flex">
                         <img
                           className="rounded-full"
                           alt="hashIcon"
@@ -94,9 +95,21 @@ function ProfileModal(props: PropsType) {
                     </button>
                   ) : (
                     <div className="flex w-fit justify-between px-5 py-4 items-center text-white  bg-gray-700 rounded-xl p-2">
-                      <div className="flex flex-col">
-                        <div className="flex">$ 11.79</div>
-                        <div className="flex">58.736 HBAR (ℏ)</div>
+                      <div className="flex flex-col items-start gap-2">
+                        <div className="flex items-center gap-3">
+                          <div className="px-[8px] border rounded-full">$</div>
+                          <div>{walletData.usdBalance}</div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Image
+                            className="rounded-full"
+                            alt="hashIcon"
+                            width={30}
+                            height={32}
+                            src="https://ipfs.io/ipfs/QmQncmX3zai19fFLz2w3AEaomH7HczkqrR7SipXYxt6VHb"
+                          />
+                          {walletData.hbarBalance}
+                        </div>
                       </div>
                     </div>
                   )}

@@ -1,9 +1,11 @@
 import React from "react";
+import { SaveData } from "../context/HashConnectAPIProvider";
 import { MintItem } from "../pages";
 
 type PropsType = {
   item: MintItem;
   handleShowModal: (arg0: MintItem) => void;
+  walletData: SaveData;
 };
 
 export default function MintCard(props: PropsType): JSX.Element {
@@ -23,18 +25,20 @@ export default function MintCard(props: PropsType): JSX.Element {
           </p>
         </div>
 
-        <div className="mt-2 border-top border-white w-full flex justify-between items-center">
-          <div className="flex flex-col items-start">
-            <div className="text-sm text-gray-400">Minting Price</div>
-            <div className="text-lg">1 HBAR</div>
+        {props.walletData.accountId != "" && (
+          <div className="mt-2 border-top border-white w-full flex justify-between items-center">
+            <div className="flex flex-col items-start">
+              <div className="text-sm text-gray-400">Minting Price</div>
+              <div className="text-lg">1 HBAR</div>
+            </div>
+            <button
+              className="rounded-xl w-fit py-3 px-3 bg-orange-800 text-white"
+              onClick={() => props.handleShowModal(item)}
+            >
+              Mint NFT
+            </button>
           </div>
-          <button
-            className="rounded-xl w-fit py-3 px-3 bg-orange-800 text-white"
-            onClick={() => props.handleShowModal(item)}
-          >
-            Mint NFT
-          </button>
-        </div>
+        )}
       </div>
     </div>
   );

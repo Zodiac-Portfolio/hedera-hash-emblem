@@ -1,5 +1,6 @@
 import { HashConnect, HashConnectTypes, MessageTypes } from "hashconnect";
 import {
+  AccountBalanceQuery,
   AccountId,
   Client,
   Hbar,
@@ -107,6 +108,8 @@ export interface SaveData {
   netWork?: string;
   id?: string;
   accountId: string;
+  hbarBalance: number;
+  usdBalance: number;
 }
 
 const getNFTInfo = async (): Promise<NFTInfoObject[]> => {
@@ -182,6 +185,8 @@ const INITIAL_SAVE_DATA: SaveData = {
   pairedAccounts: [],
   pairedWalletData: null,
   accountId: "",
+  hbarBalance: 10,
+  usdBalance: 10 * 0.2,
 };
 
 const APP_CONFIG: HashConnectTypes.AppMetadata = {
@@ -194,10 +199,13 @@ const loadLocalData = (): null | SaveData => {
   const foundData = localStorage.getItem("hashConnectData");
 
   if (foundData) {
-    const saveData: SaveData = JSON.parse(foundData);
+    const saveData: any = JSON.parse(foundData);
 
     // setSaveData(saveData);
-    return saveData;
+    return {
+      ...saveData,
+      accountId: saveData.accountIds[0],
+    };
   } else return null;
 };
 
@@ -415,6 +423,8 @@ export default function HashConnectProvider({
           false
         );
 
+        console.log(_saveData.pairingString);
+
         hashConnect.findLocalWallets();
       } else {
         if (debug) console.log("====Local data found====", localData);
@@ -425,6 +435,13 @@ export default function HashConnectProvider({
           localData?.topic,
           localData?.pairedWalletData ?? metaData
         );
+
+        const hbarBalance = await getHbarBalance(
+          AccountId.fromString(localData.accountId)
+        );
+
+        localData.hbarBalance = parseFloat(hbarBalance);
+        localData.usdBalance = parseFloat(hbarBalance) * 0.2;
       }
     } catch (error) {
       console.log(error);
@@ -436,6 +453,18 @@ export default function HashConnectProvider({
       }
       if (debug) console.log("====Wallet details updated to state====");
     }
+  };
+
+  const getHbarBalance = async (account: AccountId): Promise<string> => {
+    const getNewBalance = await new AccountBalanceQuery()
+      .setAccountId(account)
+      .execute(hashClient);
+
+    console.log(
+      "The account balance is" + getNewBalance.hbars.toString() + " tinybar."
+    );
+
+    return getNewBalance.hbars.toString();
   };
 
   const saveDataInLocalStorage = (localData: {
@@ -521,6 +550,7 @@ export default function HashConnectProvider({
 
   const connect = () => {
     if (debug) console.log("Pairing String::", saveData.pairingString);
+
     hashConnect.connectToLocalWallet(saveData.pairingString);
   };
 

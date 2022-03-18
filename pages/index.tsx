@@ -93,6 +93,7 @@ function App() {
               {availibleForMint?.map((item) => {
                 return (
                   <MintCard
+                    walletData={walletData}
                     key={Math.random() * 1000}
                     item={item}
                     handleShowModal={() => handleShowMintModal(item)}
