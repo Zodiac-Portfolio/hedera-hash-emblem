@@ -1,11 +1,12 @@
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import BasicModal from "../components/BasicModal";
 import ConnectionModal from "../components/ConnectionModal";
-import MintCard from "../components/MintCard";
 import Navbar from "../components/Navbar";
 import { useHashConnect } from "../context/HashConnectAPIProvider";
+import { useAuth } from "../context/AuthProvider";
 import { client } from "../lib/sanity";
+import MintCard from "../components/MintCard";
+import MintModal from "../components/MintModal";
+import ProfileModal from "../components/ProfileModal";
 
 export type MintItem = {
   _id: string;
@@ -16,11 +17,12 @@ export type MintItem = {
 };
 
 function App() {
-  const router = useRouter();
   const { walletData, buildMintNftTransaction } = useHashConnect();
   const [availibleForMint, setAvailibleForMint] = useState<MintItem[]>([]);
-  const [showMintModal, setShowMintModal] = useState(false);
   const [showConnectionModal, setShowConnectionModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showMintModal, setShowMintModal] = useState(false);
+  const { authUser } = useAuth();
   const [detailMintItem, setDetailMintItem] = useState<MintItem>({
     _id: "1",
     name: "SOLDIER",
@@ -29,23 +31,12 @@ function App() {
     metadata: "QmQUdcdfkuFbtvmd71TJLqPjruoRJ5jRErVZfYL58wamdS",
     supply: 5,
   });
-  const handleShowModal = (item: MintItem) => {
+
+  const handleShowMintModal = (item: MintItem) => {
     const dataToSave = JSON.stringify(item);
     localStorage.setItem("detailItemSelected", dataToSave);
     setDetailMintItem(item);
     setShowMintModal(true);
-  };
-
-  const handleCloseConnectionModal = () => {
-    setShowConnectionModal(false);
-  };
-
-  const handleCloseMintModal = () => {
-    setShowMintModal(false);
-  };
-
-  const handleShowConnectModal = () => {
-    setShowConnectionModal(true);
   };
 
   const getAllItems = async () => {
@@ -70,8 +61,12 @@ function App() {
   }, []);
   return (
     <div className="flex flex-col w-screen h-screen  gap-10">
-      <Navbar handleShowConnectModal={() => handleShowConnectModal()} />
-      <div className="w-full flex flex-col h-full items-center text-center justify-evenly">
+      <Navbar
+        handleShowProfileModal={() => setShowProfileModal(true)}
+        handleShowConnectModal={() => setShowConnectionModal(true)}
+      />
+
+      <div className="w-full  flex flex-col h-full items-center justify-evenly text-center  gap-10 overflow-x-hidden">
         <div className="text-white flex justify-center items-center w-full">
           <p className="webtitle">
             Hashgrapgh RPG NFT Ecosystem
@@ -79,43 +74,48 @@ function App() {
             &mdash; Fight against War &mdash;
           </p>
         </div>
-
-        {walletData.accountId ? (
+        {authUser.firebaseId === "" ? (
+          <div className=" text-white flex-col justify-center items-center w-2/3 lg:w-1/3">
+            <p className="start_journey_text">
+              Join the decentralized RPG War ecosystem, competing with users
+              along the world to find the Hash Emblem
+            </p>
+            <p
+              onClick={() => setShowConnectionModal(true)}
+              className="start_journey cursor-pointer"
+            >
+              Start
+            </p>
+          </div>
+        ) : (
           <div className="flex flex-wrap w-full gap-10 items-center justify-center">
             {availibleForMint?.map((item) => {
               return (
                 <MintCard
                   key={Math.random() * 1000}
                   item={item}
-                  handleShowModal={() => handleShowModal(item)}
+                  handleShowModal={() => handleShowMintModal(item)}
                 />
               );
             })}
           </div>
-        ) : (
-          <div className="text-white flex flex-col justify-center items-center w-2/3 lg:w-1/2">
-            <p className="start_journey_text">
-              Join the decentralized RPG War ecosystem, and compete with users
-              along the world and be the first to find the Hash Emblem{" "}
-            </p>
-            <p
-              onClick={() => router.push("/auth")}
-              className="start_journey cursor-pointer"
-            >
-              Start
-            </p>
-          </div>
         )}
       </div>
-      <BasicModal
-        mintAction={() => buildMintNftTransaction()}
-        open={showMintModal}
-        closeModal={() => handleCloseMintModal()}
-        detailItem={detailMintItem}
-      />
+
       <ConnectionModal
         open={showConnectionModal}
-        closeModal={() => handleCloseConnectionModal()}
+        closeModal={() => setShowConnectionModal(false)}
+        walletData={walletData}
+      />
+      <MintModal
+        open={showMintModal}
+        closeModal={() => setShowMintModal(false)}
+        detailItem={detailMintItem}
+        mintAction={() => buildMintNftTransaction()}
+      />
+      <ProfileModal
+        open={showProfileModal}
+        closeModal={() => setShowProfileModal(false)}
         walletData={walletData}
       />
     </div>

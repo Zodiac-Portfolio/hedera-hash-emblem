@@ -14,7 +14,7 @@ export const ipfsLoader = ({ src }: { src: string }) => {
   return src;
 };
 
-function BasicModal(props: PropsType) {
+function MintModal(props: PropsType) {
   const handleClick = () => {
     props.mintAction();
   };
@@ -121,4 +121,4 @@ function BasicModal(props: PropsType) {
   );
 }
 
-export default BasicModal;
+export default MintModal;

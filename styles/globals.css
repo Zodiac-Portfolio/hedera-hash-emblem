@@ -53,7 +53,7 @@ body {
 .start_journey {
   text-transform: uppercase;
   font-family: "verdana";
-  font-size: 8em;
+  font-size: 7em;
   font-weight: 700;
   color: #f5f5f5;
   text-shadow: 1px 1px 1px #300b00, 1px 2px 1px #300b00, 1px 3px 1px #300b00,
@@ -86,6 +86,30 @@ body {
   font-size: 10em;
   color: #793905;
 }
+
+.start_journey_text {
+  text-transform: uppercase;
+  font-size: 1.2em;
+  font-weight: 700;
+  color: #bebcbc;
+}
+
+.ecosystem_title {
+  text-transform: uppercase;
+  font-family: "verdana";
+  font-size: 4em;
+  font-weight: 700;
+  color: #a19d9d;
+  text-shadow: 1px 1px 1px #300b00, 1px 2px 1px #300b00, 1px 3px 1px #300b00,
+    1px 4px 1px #300b00, 1px 5px 1px #300b00, 1px 6px 1px #300b00,
+    1px 7px 1px #300b00, 1px 8px 1px #300b00, 1px 9px 1px #300b00,
+    1px 10px 1px #300b00, 1px 18px 6px rgba(16, 16, 16, 0.4),
+    1px 22px 10px rgba(16, 16, 16, 0.2), 1px 25px 35px rgba(16, 16, 16, 0.2),
+    1px 30px 60px rgba(16, 16, 16, 0.4);
+
+  transition: 1s;
+}
+
 /* Animate Background Image */
 
 @-webkit-keyframes aitf {
@@ -122,4 +146,14 @@ body {
 .example-appear.example-appear-active {
   opacity: 1;
   transition: opacity 0.5s ease-in;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
