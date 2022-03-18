@@ -414,6 +414,8 @@ export default function HashConnectProvider({
           netWork,
           false
         );
+
+        await hashConnect.findLocalWallets();
       } else {
         if (debug) console.log("====Local data found====", localData);
         //use loaded data for initialization + connection
