@@ -5,7 +5,6 @@ import {
   setPersistence,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { RiCloseCircleLine } from "react-icons/ri";
 import { useAuth } from "../context/AuthProvider";
@@ -27,35 +26,34 @@ type PropsType = {
 };
 
 function ConnectionModal(props: PropsType) {
-  const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [alias, setAlias] = useState("");
   const { updateFirebaseUser } = useAuth();
 
   const requestCreateAccount = async () => {
-    console.log("KE");
-
-    const userCreated = await createUserWithEmailAndPassword(
-      getAuth(),
-      email,
-      password
-    );
-    const doc = {
-      _type: "account",
-      firebaseId: userCreated.user.uid,
-      email: email,
-      alias: "HshUser 1",
-      profileImage: "https://avatars.dicebear.com/api/adventurer/2.svg",
-      hederaAccount: "",
-    };
-    const createdDoc = await client.create(doc);
-    console.log(createdDoc);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { _id, _createdAt, _rev, _type, _updatedAt, ...restData } =
-      createdDoc;
-    updateFirebaseUser(restData);
-    router.push("/mint");
+    setPersistence(getAuth(), browserLocalPersistence).then(async () => {
+      const userCreated = await createUserWithEmailAndPassword(
+        getAuth(),
+        email,
+        password
+      );
+      const doc = {
+        _type: "account",
+        firebaseId: userCreated.user.uid,
+        email: email,
+        alias: alias,
+        profileImage: `https://avatars.dicebear.com/api/adventurer/${alias}.svg`,
+        hederaAccount: "",
+      };
+      const createdDoc = await client.create(doc);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { _id, _createdAt, _rev, _type, _updatedAt, ...restData } =
+        createdDoc;
+      updateFirebaseUser(restData);
+      window.location.reload();
+    });
   };
   const requestSignIn = async () => {
     setPersistence(getAuth(), browserLocalPersistence)
@@ -143,15 +141,16 @@ function ConnectionModal(props: PropsType) {
                 <form className="w-4/5 shadow-md rounded px-8 pt-6 pb-8 mb-4">
                   <div className="mb-4 flex flex-col items-start">
                     <div className="block text-gray-500 text-md font-bold mb-2">
-                      Username
+                      Email
                     </div>
+
                     <input
                       className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                       id="Email"
                       value={email}
                       type="email"
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Username"
+                      placeholder="satoshinakamoto@hashemblem.com"
                     />
                   </div>
                   <div className="mb-6 flex flex-col items-start ">
@@ -168,6 +167,21 @@ function ConnectionModal(props: PropsType) {
                       placeholder="******************"
                     />
                   </div>
+                  {!isLogin && (
+                    <div className="mb-4 flex flex-col items-start">
+                      <div className="block text-gray-500 text-md font-bold mb-2">
+                        Select a cool Alias. Max 12 letters!
+                      </div>
+                      <input
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="username"
+                        value={alias}
+                        type="text"
+                        onChange={(e) => setAlias(e.target.value)}
+                        placeholder="StshiNkmoto"
+                      />
+                    </div>
+                  )}
                   <div className="flex gap-2 flex-col md:flex-row items-center justify-between">
                     <button
                       className="bg-orange-700 hover:bg-orange-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
@@ -176,7 +190,7 @@ function ConnectionModal(props: PropsType) {
                       }
                       type="button"
                     >
-                      {isLogin ? "Login" : "Register"}
+                      {isLogin ? "Log in" : "Register"}
                     </button>
                     <a
                       className="inline-block align-baseline font-bold text-sm text-orange-500  hover:text-orange-800"

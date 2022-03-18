@@ -23,7 +23,6 @@ function ProfileModal(props: PropsType) {
     localStorage.removeItem(
       "firebase:authUser:AIzaSyB5yY8odWKLfi53qzc77YxL7FLmQAZAJRc:[DEFAULT]"
     );
-    console.log("DOING");
     getAuth().signOut();
     window.location.reload();
   };

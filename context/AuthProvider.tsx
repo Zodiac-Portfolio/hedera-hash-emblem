@@ -15,9 +15,7 @@ const AuthUserContext = createContext({
   signInWithPassword: (email: string, password: string) => {},
   createUserWithPassword: (email: string, password: string) => {},
   signOut: () => {},
-  updateFirebaseUser: (user: FirebaseUser) => {
-    console.log(user);
-  },
+  updateFirebaseUser: (user: FirebaseUser) => {},
 });
 
 export function AuthUserProvider({ children }: { children: any }) {
@@ -42,12 +40,9 @@ export function AuthUserProvider({ children }: { children: any }) {
     const usrString = window.localStorage.getItem(
       "firebase:authUser:AIzaSyB5yY8odWKLfi53qzc77YxL7FLmQAZAJRc:[DEFAULT]"
     );
-    console.log("DONE");
     if (usrString) {
       const sesionUser: any = JSON.parse(usrString);
       if (sesionUser) {
-        console.log(sesionUser);
-
         const query = `
         *[_type=="account" && firebaseId=="${sesionUser.uid}"]{
           alias,
@@ -61,7 +56,6 @@ export function AuthUserProvider({ children }: { children: any }) {
 
         let resultUser;
         client.fetch(query).then((res) => {
-          console.log(res);
           if (res) {
             resultUser = {
               firebaseId: sesionUser.firebaseId,
@@ -75,7 +69,6 @@ export function AuthUserProvider({ children }: { children: any }) {
         });
       }
     } else {
-      console.log("NO USER");
     }
   }, [firebaseUser.firebaseId]);
   return (
