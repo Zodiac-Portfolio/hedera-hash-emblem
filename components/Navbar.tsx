@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthProvider";
 import Image from "next/image";
 import { RiAccountCircleFill } from "react-icons/ri";
+import { SaveData } from "../context/HashConnectAPIProvider";
 //import Link from "next/link";
 
 export default function Navbar(props: {
@@ -13,6 +14,7 @@ export default function Navbar(props: {
   handleShowProfileModal:
     | React.MouseEventHandler<HTMLButtonElement>
     | undefined;
+  walletData: SaveData;
 }) {
   const router = useRouter();
   /*   const { walletData } = useHashConnect(); */
@@ -29,7 +31,7 @@ export default function Navbar(props: {
           alt="hashIcon"
           width={64}
           height={64}
-          src="https://ipfs.io/ipfs/QmZ1nzKzG3YEq2GW3Zmuv2osgbdAN8Jori7nE5fxMCBtLM"
+          src="https://ipfs.io/ipfs/QmbMtEZAxHbobGGypwXtAfwvGtfcX9oQvYAL8GNhZEbjQ1"
         />{" "}
         <div className="text-xl uppercase text-gray-300">Hash Emblem</div>
       </div>
@@ -74,8 +76,14 @@ export default function Navbar(props: {
             )}
           </div>
           {authUser.firebaseId !== "" && (
-            <div className="text-lg uppercase text-gray-400">
-              {authUser.alias}
+            <div>
+              <div className="text-md uppercase text-gray-30">
+                {authUser.alias}
+              </div>
+              <div className="text-sm uppercase text-gray-400">
+                {props.walletData.accountId !== "" &&
+                  props.walletData.accountId}
+              </div>
             </div>
           )}
         </button>

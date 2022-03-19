@@ -26,13 +26,15 @@ const HASPACK_METADATA = {
   publicKey: "6aea08ac-346f-4a4b-940e-1994ff6a4e1a",
   url: "chrome&#38;&#35;38&#59;&#38;&#35;35&#59;38&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;35&#38;&#35;59&#59;45&#38;&#35;38&#59;&#38;&#35;35&#59;59&#38;&#35;59&#59;extension&#38;&#35;38&#59;&#38;&#35;35&#59;38&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;35&#38;&#35;59&#59;58&#38;&#35;38&#59;&#38;&#35;35&#59;59&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;38&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;35&#38;&#35;59&#59;47&#38;&#35;38&#59;&#38;&#35;35&#59;59&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;38&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;35&#38;&#35;59&#59;47&#38;&#35;38&#59;&#38;&#35;35&#59;59&#38;&#35;59&#59;gjagmgiddbbciopjhllkdnddhcglnemk",
 };
-const NFT_COLLECTION = "0.0.30977681";
+const NFT_COLLECTION = "0.0.33980313";
 const SUPPLY_KEY =
-  "54266676e59b36ec7c2617e26578377bc183777c1326c45bc3e72f7c7fdc2111";
-const hashClient = Client.forTestnet().setOperator(
-  "0.0.30909227",
-  "302e020100300506032b657004220420e3826f57fd5714ecd546722badd9704c9d245834952ffdfe0edaced31fe6df61"
-);
+  "e533d35c16ffa16e97c57f03c3bd97b43b4beeed4d71d3277e2ce3a426ad980a";
+
+const OPERATOR_ID = "0.0.30909227";
+const OPERATOR_KEY =
+  "302e020100300506032b657004220420e3826f57fd5714ecd546722badd9704c9d245834952ffdfe0edaced31fe6df61";
+
+const hashClient = Client.forTestnet().setOperator(OPERATOR_ID, OPERATOR_KEY);
 
 export function Utf8ArrayToStr(array: Uint8Array | undefined | null) {
   let out, i, len, c;
@@ -112,7 +114,55 @@ export interface SaveData {
   usdBalance: number;
 }
 
-const getNFTInfo = async (): Promise<NFTInfoObject[]> => {
+export const getMyNFTs = async (
+  accountId: string
+): Promise<NFTInfoObject[]> => {
+  const operatorId = AccountId.fromString("0.0.30909227");
+  const operatorKey = PrivateKey.fromString(
+    "302e020100300506032b657004220420e3826f57fd5714ecd546722badd9704c9d245834952ffdfe0edaced31fe6df61"
+  );
+
+  const hashClient = Client.forTestnet().setOperator(operatorId, operatorKey);
+
+  //IPFS content identifiers for which we will create a NFT
+
+  let all = true;
+  const myNFTS = new Array<NFTInfoObject>();
+  let i = 1;
+  while (all) {
+    try {
+      const queryTx = await new TokenNftInfoQuery()
+        .setNftId(new NftId(TokenId.fromString(NFT_COLLECTION), i))
+        .execute(hashClient);
+
+      const owner = queryTx[0].accountId.toString();
+
+      const metadata = Utf8ArrayToStr(queryTx[0].metadata);
+
+      const metadataFormatted = await axios.get(
+        `https://ipfs.io/ipfs/${metadata}`
+      );
+
+      if (owner === accountId) {
+        myNFTS.push({
+          serial: i,
+          nftId: queryTx[0].nftId.toString(),
+          owner: owner,
+          metadataString: queryTx[0].metadata?.toLocaleString(),
+          metadata: metadataFormatted.data,
+        });
+      }
+
+      i++;
+    } catch (e) {
+      all = false;
+    }
+  }
+
+  return myNFTS;
+};
+
+export const getNFTInfo = async (): Promise<NFTInfoObject[]> => {
   const operatorId = AccountId.fromString("0.0.30909227");
   const operatorKey = PrivateKey.fromString(
     "302e020100300506032b657004220420e3826f57fd5714ecd546722badd9704c9d245834952ffdfe0edaced31fe6df61"

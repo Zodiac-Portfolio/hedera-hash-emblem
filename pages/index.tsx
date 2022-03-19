@@ -1,13 +1,31 @@
 import { useEffect, useState } from "react";
 import ConnectionModal from "../components/ConnectionModal";
 import Navbar from "../components/Navbar";
-import { useHashConnect } from "../context/HashConnectAPIProvider";
+import {
+  getMyNFTs,
+  NFTInfoObject,
+  useHashConnect,
+} from "../context/HashConnectAPIProvider";
 import { useAuth } from "../context/AuthProvider";
 import { client } from "../lib/sanity";
 import MintCard from "../components/MintCard";
 import MintModal from "../components/MintModal";
 import ProfileModal from "../components/ProfileModal";
 
+export type NFTItem = {
+  serial: number;
+  nftId: string;
+  owner: string;
+  metadataString: string;
+  metadata: {
+    name: string;
+    description: string;
+    image: string;
+    keyValues: object;
+    class: string;
+    weapons: string[];
+  };
+};
 export type MintItem = {
   _id: string;
   name: string;
@@ -31,6 +49,7 @@ function App() {
     metadata: "QmQUdcdfkuFbtvmd71TJLqPjruoRJ5jRErVZfYL58wamdS",
     supply: 5,
   });
+  const [myItems, setMyItems] = useState<NFTInfoObject[]>([]);
 
   const handleShowMintModal = (item: MintItem) => {
     const dataToSave = JSON.stringify(item);
@@ -59,9 +78,19 @@ function App() {
       setAvailibleForMint(res);
     });
   }, []);
+
+  useEffect(() => {
+    if (authUser.firebaseId !== "" && walletData.accountId !== "") {
+      getMyNFTs(walletData.accountId).then((res) => {
+        console.log(res);
+        setMyItems(res);
+      });
+    }
+  }, [authUser, walletData]);
   return (
     <div className="flex flex-col w-screen h-screen  gap-10">
       <Navbar
+        walletData={walletData}
         handleShowProfileModal={() => setShowProfileModal(true)}
         handleShowConnectModal={() => setShowConnectionModal(true)}
       />
@@ -120,7 +149,7 @@ function App() {
         open={showProfileModal}
         closeModal={() => setShowProfileModal(false)}
         user={authUser}
-        myInventoy={[]}
+        myInventoy={myItems}
         walletData={walletData}
       />
     </div>

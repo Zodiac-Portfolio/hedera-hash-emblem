@@ -2,7 +2,11 @@ import { getAuth } from "firebase/auth";
 import Image from "next/image";
 import React from "react";
 import { RiCloseCircleFill } from "react-icons/ri";
-import { SaveData, useHashConnect } from "../context/HashConnectAPIProvider";
+import {
+  NFTInfoObject,
+  SaveData,
+  useHashConnect,
+} from "../context/HashConnectAPIProvider";
 import { FirebaseUser } from "../lib/firebase";
 import MyItemCard from "./MyItemCard";
 
@@ -19,7 +23,7 @@ type PropsType = {
   closeModal: () => void;
   walletData: SaveData;
   user: FirebaseUser;
-  myInventoy: [];
+  myInventoy: NFTInfoObject[];
 };
 
 function ProfileModal(props: PropsType) {
@@ -32,6 +36,7 @@ function ProfileModal(props: PropsType) {
     getAuth().signOut();
     window.location.reload();
   };
+
   return (
     <>
       {props.open && (
@@ -53,15 +58,15 @@ function ProfileModal(props: PropsType) {
             >
               &#8203;
             </span>
-            <div className="w-1/2 h-[600px] relative p-10 bg-gray-900  inline-block align-bottom rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle">
+            <div className="w-full sm:w-4/5 md:w-2/3 lg:w-1/2 h-[600px] relative p-10 bg-gray-900  inline-block align-bottom rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle">
               <RiCloseCircleFill
                 className="text-white text-3xl absolute right-2 top-2 cursor-pointer"
                 onClick={() => props.closeModal()}
               />
               <div className="flex w-full flex-col gap-5 justify-between h-full ">
-                <div className="flex w-full gap-10 justify-between px-5 py-7 items-center text-white  bg-gray-800 rounded-xl p-2">
+                <div className="flex w-full flex-col sm:flex-row gap-5 justify-between px-5 py-7 items-center text-white  bg-gray-800 rounded-xl p-2">
                   <div className="flex gap-10">
-                    <div className="flex items-center gap-3 first:hover:flex">
+                    <div className="flex items-center  gap-3 first:hover:flex">
                       <div className="flex">
                         <img
                           className="rounded-full"
@@ -76,13 +81,19 @@ function ProfileModal(props: PropsType) {
                         />
                       </div>
                       {props.user.firebaseId !== "" && (
-                        <div className="text-lg uppercase text-gray-400">
-                          {props.user.alias}
+                        <div>
+                          <div className="text-lg uppercase text-gray-300">
+                            {props.user.alias}
+                          </div>
+                          <div className="text-lg uppercase text-gray-400">
+                            {walletData.accountId !== "" &&
+                              walletData.accountId}
+                          </div>
                         </div>
                       )}
                     </div>
                   </div>
-                  {walletData.accountId == "" ? (
+                  {walletData.accountId === "" ? (
                     <button
                       onClick={() => connect()}
                       className="flex w-fit justify-between cursor-pointer hover:bg-orange-800 px-5 py-4 items-center text-white  bg-gray-700 rounded-xl p-2"
@@ -118,29 +129,31 @@ function ProfileModal(props: PropsType) {
                 <div className="h-2/3 bg-gray-800 rounded-xl p-2 w-full">
                   {props.myInventoy.length <= 0 ? (
                     <div className="text-white flex flex-col items-start gap-3">
-                      <div className="flex flex-grid">
-                        <div>Yo u have no items in your inventory</div>
-                        <button onClick={() => handleSignOut()}>Logout</button>
+                      <div className="flex flex-grid items-center">
+                        <div>You have no items in your inventory</div>
                       </div>
                     </div>
                   ) : (
                     <div className="text-white flex flex-col items-start gap-3">
                       <div className="flex flex-grid">
-                        <MyItemCard
-                          item={{
-                            _id: "",
-                            name: "Cabalier",
-                            imageURL:
-                              "https://ipfs.io/ipfs/QmRMTiaerkUM3AiMA7nDGC5Ae5Tn2PB8Rdmahy5s15y4nY",
-                            metadata:
-                              "QmeMG3Y6HEf4wrzfPpPUo7Eg76X39nHVUNssoYpENZJbCj",
-                            supply: 1,
-                          }}
-                        />
+                        {props.myInventoy.map((item) => {
+                          return (
+                            <MyItemCard
+                              item={item}
+                              key={Math.random() * 1000}
+                            />
+                          );
+                        })}
                       </div>
                     </div>
                   )}
                 </div>
+                <button
+                  className="text-white hover:text-gray-400"
+                  onClick={() => handleSignOut()}
+                >
+                  Logout
+                </button>
               </div>
             </div>
           </div>
