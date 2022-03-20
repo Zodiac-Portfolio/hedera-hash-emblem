@@ -86,7 +86,7 @@ function App() {
         setMyItems(res);
       });
     }
-  }, [authUser, walletData]);
+  }, [walletData.accountId]);
   return (
     <div className="flex flex-col w-screen h-screen  gap-10">
       <Navbar

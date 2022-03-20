@@ -134,17 +134,12 @@ function ProfileModal(props: PropsType) {
                       </div>
                     </div>
                   ) : (
-                    <div className="text-white flex flex-col items-start gap-3">
-                      <div className="flex flex-grid">
-                        {props.myInventoy.map((item) => {
-                          return (
-                            <MyItemCard
-                              item={item}
-                              key={Math.random() * 1000}
-                            />
-                          );
-                        })}
-                      </div>
+                    <div className="w-full h-full text-white flex flex-wrap justify-center gap-3">
+                      {props.myInventoy.map((item) => {
+                        return (
+                          <MyItemCard item={item} key={Math.random() * 1000} />
+                        );
+                      })}
                     </div>
                   )}
                 </div>
