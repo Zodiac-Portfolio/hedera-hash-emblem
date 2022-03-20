@@ -4,10 +4,8 @@ import {
   AccountId,
   Client,
   Hbar,
-  NftId,
   PrivateKey,
   TokenAssociateTransaction,
-  TokenId,
   TokenMintTransaction,
   TokenNftInfoQuery,
   Transaction,
@@ -18,6 +16,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { MintItem } from "../pages";
 import { client } from "../lib/sanity";
+import { getNFTCollection, getNFTId } from "./utils/nftUtils";
 
 const HASPACK_METADATA = {
   name: "HashPack",
@@ -26,15 +25,22 @@ const HASPACK_METADATA = {
   publicKey: "6aea08ac-346f-4a4b-940e-1994ff6a4e1a",
   url: "chrome&#38;&#35;38&#59;&#38;&#35;35&#59;38&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;35&#38;&#35;59&#59;45&#38;&#35;38&#59;&#38;&#35;35&#59;59&#38;&#35;59&#59;extension&#38;&#35;38&#59;&#38;&#35;35&#59;38&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;35&#38;&#35;59&#59;58&#38;&#35;38&#59;&#38;&#35;35&#59;59&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;38&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;35&#38;&#35;59&#59;47&#38;&#35;38&#59;&#38;&#35;35&#59;59&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;38&#38;&#35;59&#59;&#38;&#35;38&#59;&#38;&#35;35&#59;35&#38;&#35;59&#59;47&#38;&#35;38&#59;&#38;&#35;35&#59;59&#38;&#35;59&#59;gjagmgiddbbciopjhllkdnddhcglnemk",
 };
-const NFT_COLLECTION = "0.0.33980313";
-const SUPPLY_KEY =
-  "e533d35c16ffa16e97c57f03c3bd97b43b4beeed4d71d3277e2ce3a426ad980a";
+//const NFT_COLLECTION = "0.0.33980313";
+//const SUPPLY_KEY =
+//  "e533d35c16ffa16e97c57f03c3bd97b43b4beeed4d71d3277e2ce3a426ad980a";
 
-const OPERATOR_ID = "0.0.30909227";
-const OPERATOR_KEY =
-  "302e020100300506032b657004220420e3826f57fd5714ecd546722badd9704c9d245834952ffdfe0edaced31fe6df61";
+//const OPERATOR_ID = "0.0.30909227";
+//const OPERATOR_KEY =
+//("302e020100300506032b657004220420e3826f57fd5714ecd546722badd9704c9d245834952ffdfe0edaced31fe6df61");
 
-const hashClient = Client.forTestnet().setOperator(OPERATOR_ID, OPERATOR_KEY);
+const hashClient = Client.forTestnet().setOperator(
+  process.env.NEXT_PUBLIC_OPERATOR_ID
+    ? process.env.NEXT_PUBLIC_OPERATOR_ID
+    : "",
+  process.env.NEXT_PUBLIC_OPERATOR_KEY
+    ? process.env.NEXT_PUBLIC_OPERATOR_KEY
+    : ""
+);
 
 export function Utf8ArrayToStr(array: Uint8Array | undefined | null) {
   let out, i, len, c;
@@ -132,7 +138,7 @@ export const getMyNFTs = async (
   while (all) {
     try {
       const queryTx = await new TokenNftInfoQuery()
-        .setNftId(new NftId(TokenId.fromString(NFT_COLLECTION), i))
+        .setNftId(getNFTId(i))
         .execute(hashClient);
 
       const owner = queryTx[0].accountId.toString();
@@ -178,7 +184,7 @@ export const getNFTInfo = async (): Promise<NFTInfoObject[]> => {
   while (all) {
     try {
       const queryTx = await new TokenNftInfoQuery()
-        .setNftId(new NftId(TokenId.fromString(NFT_COLLECTION), i))
+        .setNftId(getNFTId(i))
         .execute(hashClient);
 
       const owner = queryTx[0].accountId.toString();
@@ -330,7 +336,7 @@ export default function HashConnectProvider({
 
     const nftTransfer = await new TransferTransaction()
       .addNftTransfer(
-        new NftId(TokenId.fromString(NFT_COLLECTION), serial),
+        getNFTId(serial),
         AccountId.fromString("0.0.30909227"),
         AccountId.fromString(account.toString())
       )
@@ -362,11 +368,17 @@ export default function HashConnectProvider({
     }
 
     const mintTx = await new TokenMintTransaction()
-      .setTokenId(NFT_COLLECTION)
+      .setTokenId(getNFTCollection())
       .setMetadata([Buffer.from(itemCID)])
       .freezeWith(hashClient);
 
-    const mintTxSign = await mintTx.sign(PrivateKey.fromString(SUPPLY_KEY));
+    const mintTxSign = await mintTx.sign(
+      PrivateKey.fromString(
+        process.env.NEXT_PUBLIC_SUPPLY_KEY
+          ? process.env.NEXT_PUBLIC_SUPPLY_KEY
+          : ""
+      )
+    );
 
     const mintTxSubmit = await mintTxSign.execute(hashClient);
 
@@ -426,7 +438,7 @@ export default function HashConnectProvider({
     const signingAcct = saveData?.accountId;
     const assTrans = new TokenAssociateTransaction()
       .setAccountId(AccountId.fromString(signingAcct))
-      .setTokenIds([TokenId.fromString(NFT_COLLECTION)]);
+      .setTokenIds([getNFTCollection()]);
     const privateKey = saveData?.privateKey;
     const transactionBytes: Uint8Array = await signAndMakeBytes(
       assTrans,
