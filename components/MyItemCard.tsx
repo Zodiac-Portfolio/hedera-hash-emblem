@@ -1,5 +1,5 @@
 import React from "react";
-import { NFTInfoObject } from "../context/HashConnectAPIProvider";
+import { NFTInfoObject } from "../context/utils/types";
 
 type PropsType = {
   item: NFTInfoObject;

@@ -8,7 +8,7 @@ import {
 import React, { useState } from "react";
 import { RiCloseCircleLine } from "react-icons/ri";
 import { useAuth } from "../context/AuthProvider";
-import { SaveData } from "../context/HashConnectAPIProvider";
+import { SaveData } from "../context/utils/types";
 import { client } from "../lib/sanity";
 
 export const hashPackLoader = () => {

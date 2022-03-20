@@ -1,6 +1,5 @@
 import React from "react";
-import { SaveData } from "../context/HashConnectAPIProvider";
-import { MintItem } from "../pages";
+import { MintItem, SaveData } from "../context/utils/types";
 
 type PropsType = {
   item: MintItem;

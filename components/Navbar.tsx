@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthProvider";
 import Image from "next/image";
 import { RiAccountCircleFill } from "react-icons/ri";
-import { SaveData } from "../context/HashConnectAPIProvider";
+import { SaveData } from "../context/utils/types";
 //import Link from "next/link";
 
 export default function Navbar(props: {
