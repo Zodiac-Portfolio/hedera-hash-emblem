@@ -2,11 +2,8 @@ import { getAuth } from "firebase/auth";
 import Image from "next/image";
 import React from "react";
 import { RiCloseCircleFill } from "react-icons/ri";
-import {
-  NFTInfoObject,
-  SaveData,
-  useHashConnect,
-} from "../context/HashConnectAPIProvider";
+import { useHashConnect } from "../context/HashConnectAPIProvider";
+import { NFTInfoObject, SaveData } from "../context/utils/types";
 import { FirebaseUser } from "../lib/firebase";
 import MyItemCard from "./MyItemCard";
 

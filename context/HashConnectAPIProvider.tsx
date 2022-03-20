@@ -14,9 +14,9 @@ import {
 } from "@hashgraph/sdk";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { MintItem } from "../pages";
 import { client } from "../lib/sanity";
-import { getNFTCollection, getNFTId } from "./utils/nftUtils";
+import { getNFTCollection, getNFTId, Utf8ArrayToStr } from "./utils/nftUtils";
+import { MintItem, NFTInfoObject, SaveData } from "./utils/types";
 
 const HASPACK_METADATA = {
   name: "HashPack",
@@ -42,83 +42,7 @@ const hashClient = Client.forTestnet().setOperator(
     : ""
 );
 
-export function Utf8ArrayToStr(array: Uint8Array | undefined | null) {
-  let out, i, len, c;
-  let char2, char3;
-  if (array) {
-    out = "";
-    len = array.length;
-    i = 0;
-    while (i < len) {
-      c = array[i++];
-      switch (c >> 4) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-          // 0xxxxxxx
-          out += String.fromCharCode(c);
-          break;
-        case 12:
-        case 13:
-          // 110x xxxx   10xx xxxx
-          char2 = array[i++];
-          out += String.fromCharCode(((c & 0x1f) << 6) | (char2 & 0x3f));
-          break;
-        case 14:
-          // 1110 xxxx  10xx xxxx  10xx xxxx
-          char2 = array[i++];
-          char3 = array[i++];
-          out += String.fromCharCode(
-            ((c & 0x0f) << 12) | ((char2 & 0x3f) << 6) | ((char3 & 0x3f) << 0)
-          );
-          break;
-      }
-    }
-
-    return out;
-  }
-}
 // Configure accounts and hashClient, and generate needed keys
-type IPFSMetadata = {
-  name: string;
-  description: string;
-  image: string;
-  class: string;
-  keyValues: {
-    health: number;
-    strength: number;
-    speed: number;
-    magic: number;
-  };
-  weapons: Array<string>;
-};
-
-export type NFTInfoObject = {
-  serial: number;
-  nftId: string;
-  owner: string;
-  metadataString: string | undefined;
-  metadata: IPFSMetadata;
-};
-
-//Type declarations
-export interface SaveData {
-  topic: string;
-  pairingString: string;
-  privateKey: string;
-  pairedWalletData: HashConnectTypes.WalletMetadata | null;
-  pairedAccounts: string[];
-  netWork?: string;
-  id?: string;
-  accountId: string;
-  hbarBalance: number;
-  usdBalance: number;
-}
 
 export const getMyNFTs = async (
   accountId: string
@@ -232,6 +156,10 @@ export interface HashConnectProviderAPI {
   buildMintNftTransaction: () => Promise<void>;
   associateCollection: () => Promise<void>;
   nftInfo: Array<NFTInfoObject> | null;
+  loadingHederaAction: boolean;
+  setLoadingHederaAction: (newValue: boolean) => void;
+  completedAction: boolean;
+  setCompletedAction: (newState: boolean) => void;
 }
 
 const INITIAL_SAVE_DATA: SaveData = {
@@ -286,6 +214,12 @@ export const HashConnectAPIContext =
     buildMintNftTransaction: () => new Promise<void>(() => {}),
     associateCollection: () => new Promise<void>(() => {}),
     nftInfo: null,
+    loadingHederaAction: false,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setLoadingHederaAction: (newState: boolean) => "Done",
+    completedAction: false,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setCompletedAction: (newState: boolean) => "Done",
   });
 
 export default function HashConnectProvider({
@@ -296,7 +230,8 @@ export default function HashConnectProvider({
   debug,
 }: PropsType) {
   //Saving Wallet Details in Ustate
-
+  const [loadingHederaAction, setLoadingHederaAction] = useState(false);
+  const [completedAction, setCompletedAction] = useState(false);
   const [saveData, SetSaveData] = useState<SaveData>(INITIAL_SAVE_DATA);
   const [nftInfo] = useState<Array<NFTInfoObject> | null>(null);
   const [installedExtensions, setInstalledExtensions] =
@@ -348,6 +283,9 @@ export default function HashConnectProvider({
         "The transfer transaction from my account to the new account was: " +
           transactionReceipt.status.toString()
       );
+
+    setLoadingHederaAction(false);
+    setCompletedAction(true);
   };
 
   const mintNft = async (
@@ -627,6 +565,10 @@ export default function HashConnectProvider({
         buildMintNftTransaction,
         associateCollection,
         nftInfo: nftInfo,
+        loadingHederaAction,
+        setLoadingHederaAction,
+        completedAction,
+        setCompletedAction,
       }}
     >
       {children}

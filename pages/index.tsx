@@ -1,41 +1,23 @@
 import { useEffect, useState } from "react";
 import ConnectionModal from "../components/ConnectionModal";
 import Navbar from "../components/Navbar";
-import {
-  getMyNFTs,
-  NFTInfoObject,
-  useHashConnect,
-} from "../context/HashConnectAPIProvider";
+import { getMyNFTs, useHashConnect } from "../context/HashConnectAPIProvider";
 import { useAuth } from "../context/AuthProvider";
 import { client } from "../lib/sanity";
 import MintCard from "../components/MintCard";
 import MintModal from "../components/MintModal";
 import ProfileModal from "../components/ProfileModal";
-
-export type NFTItem = {
-  serial: number;
-  nftId: string;
-  owner: string;
-  metadataString: string;
-  metadata: {
-    name: string;
-    description: string;
-    image: string;
-    keyValues: object;
-    class: string;
-    weapons: string[];
-  };
-};
-export type MintItem = {
-  _id: string;
-  name: string;
-  imageURL: string;
-  metadata: string;
-  supply: number;
-};
+import { MintItem, NFTInfoObject } from "../context/utils/types";
 
 function App() {
-  const { walletData, buildMintNftTransaction } = useHashConnect();
+  const {
+    walletData,
+    buildMintNftTransaction,
+    setLoadingHederaAction,
+    loadingHederaAction,
+    completedAction,
+    setCompletedAction,
+  } = useHashConnect();
   const [availibleForMint, setAvailibleForMint] = useState<MintItem[]>([]);
   const [showConnectionModal, setShowConnectionModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -140,10 +122,14 @@ function App() {
         walletData={walletData}
       />
       <MintModal
+        loadingAction={loadingHederaAction}
+        setLoadingAction={setLoadingHederaAction}
         open={showMintModal}
         closeModal={() => setShowMintModal(false)}
         detailItem={detailMintItem}
         mintAction={() => buildMintNftTransaction()}
+        completedAction={completedAction}
+        setCompletedAction={setCompletedAction}
       />
       <ProfileModal
         open={showProfileModal}
