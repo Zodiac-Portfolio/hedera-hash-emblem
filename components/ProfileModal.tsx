@@ -31,6 +31,7 @@ function ProfileModal(props: PropsType) {
       "firebase:authUser:AIzaSyB5yY8odWKLfi53qzc77YxL7FLmQAZAJRc:[DEFAULT]"
     );
     getAuth().signOut();
+    window.localStorage.clear();
     window.location.reload();
   };
 

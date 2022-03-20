@@ -69,6 +69,7 @@ function App() {
         console.log(res);
         setMyItems(res);
       });
+      updateAccountBalance();
     }
   }, [walletData.accountId, authUser.firebaseId]);
 
