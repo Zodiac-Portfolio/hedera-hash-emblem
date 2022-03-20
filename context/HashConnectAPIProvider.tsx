@@ -16,7 +16,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { client } from "../lib/sanity";
 import { getNFTCollection, getNFTId, Utf8ArrayToStr } from "./utils/nftUtils";
-import { MintItem, NFTInfoObject, SaveData } from "./utils/types";
+import { IPFSMetadata, MintItem, NFTInfoObject, SaveData } from "./utils/types";
 
 const HASPACK_METADATA = {
   name: "HashPack",
@@ -43,54 +43,6 @@ const hashClient = Client.forTestnet().setOperator(
 );
 
 // Configure accounts and hashClient, and generate needed keys
-
-export const getMyNFTs = async (
-  accountId: string
-): Promise<NFTInfoObject[]> => {
-  const operatorId = AccountId.fromString("0.0.30909227");
-  const operatorKey = PrivateKey.fromString(
-    "302e020100300506032b657004220420e3826f57fd5714ecd546722badd9704c9d245834952ffdfe0edaced31fe6df61"
-  );
-
-  const hashClient = Client.forTestnet().setOperator(operatorId, operatorKey);
-
-  //IPFS content identifiers for which we will create a NFT
-
-  let all = true;
-  const myNFTS = new Array<NFTInfoObject>();
-  let i = 1;
-  while (all) {
-    try {
-      const queryTx = await new TokenNftInfoQuery()
-        .setNftId(getNFTId(i))
-        .execute(hashClient);
-
-      const owner = queryTx[0].accountId.toString();
-
-      const metadata = Utf8ArrayToStr(queryTx[0].metadata);
-
-      const metadataFormatted = await axios.get(
-        `https://ipfs.io/ipfs/${metadata}`
-      );
-
-      if (owner === accountId) {
-        myNFTS.push({
-          serial: i,
-          nftId: queryTx[0].nftId.toString(),
-          owner: owner,
-          metadataString: queryTx[0].metadata?.toLocaleString(),
-          metadata: metadataFormatted.data,
-        });
-      }
-
-      i++;
-    } catch (e) {
-      all = false;
-    }
-  }
-
-  return myNFTS;
-};
 
 export const getNFTInfo = async (): Promise<NFTInfoObject[]> => {
   const operatorId = AccountId.fromString("0.0.30909227");
@@ -160,6 +112,7 @@ export interface HashConnectProviderAPI {
   setLoadingHederaAction: (newValue: boolean) => void;
   completedAction: boolean;
   setCompletedAction: (newState: boolean) => void;
+  updateAccountBalance: () => Promise<void>;
 }
 
 const INITIAL_SAVE_DATA: SaveData = {
@@ -220,7 +173,20 @@ export const HashConnectAPIContext =
     completedAction: false,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setCompletedAction: (newState: boolean) => "Done",
+    updateAccountBalance: () => new Promise<void>(() => {}),
   });
+
+export const getHbarBalance = async (account: AccountId): Promise<string> => {
+  const getNewBalance = await new AccountBalanceQuery()
+    .setAccountId(account)
+    .execute(hashClient);
+
+  console.log(
+    "The account balance is" + getNewBalance.hbars.toString() + " tinybar."
+  );
+
+  return getNewBalance.hbars.toString();
+};
 
 export default function HashConnectProvider({
   children,
@@ -326,6 +292,29 @@ export default function HashConnectProvider({
     //Log the serial number
     if (debug)
       console.log(`- Created NFT with serial: ${mintRx.serials[0].low} \n`);
+
+    //Save it to sanity
+    const metadataValueReq = await axios.get(`https://ipfs.io/ipfs/${itemCID}`);
+
+    const metadataValue: IPFSMetadata = metadataValueReq.data;
+
+    const doc = {
+      _type: "mintedNfts",
+      nftId: `${mintRx.serials[0].low}@${getNFTCollection().toString()}`,
+      mintedBy: account,
+
+      serial: mintRx.serials[0].low,
+      metadata: {
+        name: _detailItem.name,
+        image: metadataValue.image,
+        class: metadataValue.class,
+        description: metadataValue.description,
+        weapons: metadataValue.weapons,
+        keyvalues: [],
+      },
+    };
+
+    await client.create(doc);
   };
 
   const signAndMakeBytes = async (
@@ -455,18 +444,6 @@ export default function HashConnectProvider({
     }
   };
 
-  const getHbarBalance = async (account: AccountId): Promise<string> => {
-    const getNewBalance = await new AccountBalanceQuery()
-      .setAccountId(account)
-      .execute(hashClient);
-
-    console.log(
-      "The account balance is" + getNewBalance.hbars.toString() + " tinybar."
-    );
-
-    return getNewBalance.hbars.toString();
-  };
-
   const saveDataInLocalStorage = (localData: {
     data: MessageTypes.ApprovePairing;
     privateKey: string;
@@ -526,12 +503,28 @@ export default function HashConnectProvider({
 
       await mintNft(_saveData, _detailItem);
       await sendNft(_saveData);
+
+      console.log();
+
+      //UPDATE BALANCE
     }
   };
   const pairingEventHandler = (data: MessageTypes.ApprovePairing) => {
     if (debug) console.log("====pairingEvent:::Wallet connected=====", data);
     // Save Data to localStorage
     saveDataInLocalStorage({ data: data, privateKey: saveData.privateKey });
+  };
+
+  const updateAccountBalance = async () => {
+    const hbarBalance = await getHbarBalance(
+      AccountId.fromString(saveData.accountId)
+    );
+
+    SetSaveData((prevData) => ({
+      ...prevData,
+      hbarBalance: parseFloat(hbarBalance),
+      usdBalance: parseFloat(hbarBalance) * 0.2,
+    }));
   };
 
   useEffect(() => {
@@ -569,6 +562,7 @@ export default function HashConnectProvider({
         setLoadingHederaAction,
         completedAction,
         setCompletedAction,
+        updateAccountBalance,
       }}
     >
       {children}

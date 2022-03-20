@@ -29,12 +29,17 @@ export const mintedNfts = {
           type: "string",
         },
         {
+          name: "image",
+          title: "Image",
+          type: "string",
+        },
+        {
           name: "class",
           title: "Class",
           type: "string",
         },
         {
-          name: "desrtiption",
+          name: "description",
           title: "Description",
           type: "string",
         },

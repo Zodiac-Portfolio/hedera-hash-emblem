@@ -22,6 +22,7 @@ function MintModal(props: PropsType) {
   const handleCloseModal = () => {
     props.setCompletedAction(false);
     props.setLoadingAction(false);
+    props.closeModal();
   };
   return (
     <>
@@ -108,9 +109,7 @@ function MintModal(props: PropsType) {
                 <button
                   type="button"
                   onClick={() =>
-                    props.completedAction
-                      ? window.location.reload()
-                      : handleClick()
+                    props.completedAction ? handleCloseModal() : handleClick()
                   }
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-orange-600 text-base font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:ml-3 sm:w-auto sm:text-sm"
                 >

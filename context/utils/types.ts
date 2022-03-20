@@ -5,12 +5,6 @@ export type IPFSMetadata = {
   description: string;
   image: string;
   class: string;
-  keyValues: {
-    health: number;
-    strength: number;
-    speed: number;
-    magic: number;
-  };
   weapons: Array<string>;
 };
 

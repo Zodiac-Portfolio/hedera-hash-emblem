@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import ConnectionModal from "../components/ConnectionModal";
 import Navbar from "../components/Navbar";
-import { getMyNFTs, useHashConnect } from "../context/HashConnectAPIProvider";
+import { useHashConnect } from "../context/HashConnectAPIProvider";
 import { useAuth } from "../context/AuthProvider";
 import { client } from "../lib/sanity";
 import MintCard from "../components/MintCard";
 import MintModal from "../components/MintModal";
 import ProfileModal from "../components/ProfileModal";
 import { MintItem, NFTInfoObject } from "../context/utils/types";
+import { getMyNFTs } from "../context/utils/nftUtils";
 
 function App() {
   const {
@@ -17,6 +18,7 @@ function App() {
     loadingHederaAction,
     completedAction,
     setCompletedAction,
+    updateAccountBalance,
   } = useHashConnect();
   const [availibleForMint, setAvailibleForMint] = useState<MintItem[]>([]);
   const [showConnectionModal, setShowConnectionModal] = useState(false);
@@ -63,12 +65,22 @@ function App() {
 
   useEffect(() => {
     if (authUser.firebaseId !== "" && walletData.accountId !== "") {
-      getMyNFTs(walletData.accountId).then((res) => {
+      getMyNFTs(walletData.accountId).then((res: NFTInfoObject[]) => {
         console.log(res);
         setMyItems(res);
       });
     }
-  }, [walletData.accountId]);
+  }, [walletData.accountId, authUser.firebaseId]);
+
+  useEffect(() => {
+    if (authUser.firebaseId !== "" && walletData.accountId !== "") {
+      getMyNFTs(walletData.accountId).then((res: NFTInfoObject[]) => {
+        console.log(res);
+        setMyItems(res);
+        updateAccountBalance();
+      });
+    }
+  }, [completedAction]);
   return (
     <div className="flex flex-col w-screen h-screen  gap-10">
       <Navbar

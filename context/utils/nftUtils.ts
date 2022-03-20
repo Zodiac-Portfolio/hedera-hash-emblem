@@ -1,12 +1,5 @@
-import {
-  AccountId,
-  Client,
-  NftId,
-  PrivateKey,
-  TokenId,
-  TokenNftInfoQuery,
-} from "@hashgraph/sdk";
-import axios from "axios";
+import { NftId, TokenId } from "@hashgraph/sdk";
+import { client } from "../../lib/sanity";
 import { NFTInfoObject } from "./types";
 
 export function Utf8ArrayToStr(array: Uint8Array | undefined | null) {
@@ -73,47 +66,18 @@ export const getNFTId = (serialNumber: number): NftId => {
 export const getMyNFTs = async (
   accountId: string
 ): Promise<NFTInfoObject[]> => {
-  const operatorId = AccountId.fromString("0.0.30909227");
-  const operatorKey = PrivateKey.fromString(
-    "302e020100300506032b657004220420e3826f57fd5714ecd546722badd9704c9d245834952ffdfe0edaced31fe6df61"
-  );
+  console.log(accountId);
+  const query = `
+  *[_type=="mintedNfts" && mintedBy=="${accountId}"]{
+    serial,
+    nftId,
+    owner,
+    metadata,
 
-  const hashClient = Client.forTestnet().setOperator(operatorId, operatorKey);
-
-  //IPFS content identifiers for which we will create a NFT
-
-  let all = true;
-  const myNFTS = new Array<NFTInfoObject>();
-  let i = 1;
-  while (all) {
-    try {
-      const queryTx = await new TokenNftInfoQuery()
-        .setNftId(getNFTId(i))
-        .execute(hashClient);
-
-      const owner = queryTx[0].accountId.toString();
-
-      const metadata = Utf8ArrayToStr(queryTx[0].metadata);
-
-      const metadataFormatted = await axios.get(
-        `https://ipfs.io/ipfs/${metadata}`
-      );
-
-      if (owner === accountId) {
-        myNFTS.push({
-          serial: i,
-          nftId: queryTx[0].nftId.toString(),
-          owner: owner,
-          metadataString: queryTx[0].metadata?.toLocaleString(),
-          metadata: metadataFormatted.data,
-        });
-      }
-
-      i++;
-    } catch (e) {
-      all = false;
-    }
   }
+  `;
 
-  return myNFTS;
+  const nftData: NFTInfoObject[] = await client.fetch(query);
+
+  return nftData;
 };
