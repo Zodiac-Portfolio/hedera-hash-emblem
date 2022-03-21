@@ -31,7 +31,7 @@ export type FirebaseUser = {
   email: string;
   alias: string;
   profileImage: string;
-  hederaAccount: string;
+  hederaAccount: object;
 };
 
 const formatAuthUser = (user: FirebaseUser) => user;
@@ -42,7 +42,7 @@ function useFirebaseAuth() {
     email: "",
     alias: "",
     profileImage: "",
-    hederaAccount: "",
+    hederaAccount: {},
   });
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -71,7 +71,7 @@ function useFirebaseAuth() {
         email: "",
         alias: "",
         profileImage: "",
-        hederaAccount: "",
+        hederaAccount: {},
       });
       setLoading(false);
       return;

@@ -4,6 +4,7 @@ import schemaTypes from "all:part:@sanity/base/schema-type";
 import { availableForMintShcema } from "./availibleForMint";
 import { accountsSchema } from "./accounts";
 import { mintedNfts } from "./mintedNfts";
+import { hederaAccount } from "./hederaAccount";
 
 export default createSchema({
   name: "default",
@@ -12,5 +13,6 @@ export default createSchema({
     availableForMintShcema,
     accountsSchema,
     mintedNfts,
+    hederaAccount,
   ]),
 });

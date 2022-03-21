@@ -17,6 +17,7 @@ import axios from "axios";
 import { client } from "../lib/sanity";
 import { getNFTCollection, getNFTId, Utf8ArrayToStr } from "./utils/nftUtils";
 import { IPFSMetadata, MintItem, NFTInfoObject, SaveData } from "./utils/types";
+import { useAuth } from "./AuthProvider";
 
 const HASPACK_METADATA = {
   name: "HashPack",
@@ -202,6 +203,8 @@ export default function HashConnectProvider({
   const [nftInfo] = useState<Array<NFTInfoObject> | null>(null);
   const [installedExtensions, setInstalledExtensions] =
     useState<HashConnectTypes.WalletMetadata | null>(null);
+
+  const { authUser } = useAuth();
 
   const sendTransaction = async (
     trans: Uint8Array,
@@ -392,9 +395,51 @@ export default function HashConnectProvider({
   //? Initialize the package in mount
   const initializeHashConnect = async () => {
     const _saveData = INITIAL_SAVE_DATA;
-    const localData = loadLocalData();
+
+    const firebaseId = window.localStorage.getItem("firebaseId");
+
+    let sanityAccountData: any = null;
+
+    if (firebaseId) {
+      let query = `
+      *[_type=="account" && firebaseId=="${firebaseId}"]{
+        hederaAccount
+      }
+      `;
+
+      const sanityAccountDataReq = await client.fetch(query);
+      console.log(sanityAccountDataReq[0].hederaAccount);
+
+      query = `
+      *[_type=="hederaAccount" && accountId=="${sanityAccountDataReq[0].hederaAccount._ref}"]{
+        accountId,
+        topic,
+        connectionId,
+        network,
+        privateKey,
+        appMetadata
+      }
+      `;
+
+      const sanityHederaDataReq = await client.fetch(query);
+      console.log(sanityHederaDataReq[0]);
+
+      sanityAccountData = {
+        accountId: sanityHederaDataReq[0].accountId,
+        accountIds: [sanityHederaDataReq[0].accountId],
+        id: sanityHederaDataReq[0].connectionId,
+        network: sanityHederaDataReq[0].network,
+        privateKey: sanityHederaDataReq[0].privateKey,
+        topic: sanityHederaDataReq[0].topic,
+        pairedWalletData: null,
+        hbarBalance: 0,
+        usdBalance: 0,
+      };
+    }
+
+    //Fetch account from sanity, if no account simple
     try {
-      if (!localData) {
+      if (!sanityAccountData) {
         if (debug) console.log("===Local data not found.=====");
 
         //first init and store the private for later
@@ -416,27 +461,30 @@ export default function HashConnectProvider({
 
         hashConnect.findLocalWallets();
       } else {
-        if (debug) console.log("====Local data found====", localData);
+        if (debug) console.log("====Local data found====", sanityAccountData);
         //use loaded data for initialization + connection
 
-        await hashConnect.init(metaData ?? APP_CONFIG, localData?.privateKey);
+        await hashConnect.init(
+          metaData ?? APP_CONFIG,
+          sanityAccountData?.privateKey
+        );
         hashConnect.connect(
-          localData?.topic,
-          localData?.pairedWalletData ?? metaData
+          sanityAccountData?.topic,
+          sanityAccountData?.pairedWalletData ?? metaData
         );
 
         const hbarBalance = await getHbarBalance(
-          AccountId.fromString(localData.accountId)
+          AccountId.fromString(sanityAccountData.accountId)
         );
 
-        localData.hbarBalance = parseFloat(hbarBalance);
-        localData.usdBalance = parseFloat(hbarBalance) * 0.2;
+        sanityAccountData.hbarBalance = parseFloat(hbarBalance);
+        sanityAccountData.usdBalance = parseFloat(hbarBalance) * 0.2;
       }
     } catch (error) {
       console.log(error);
     } finally {
-      if (localData) {
-        SetSaveData((prevData) => ({ ...prevData, ...localData }));
+      if (sanityAccountData) {
+        SetSaveData((prevData) => ({ ...prevData, ...sanityAccountData }));
       } else {
         SetSaveData((prevData) => ({ ...prevData, ...saveData }));
       }
@@ -444,12 +492,10 @@ export default function HashConnectProvider({
     }
   };
 
-  const saveDataInLocalStorage = (localData: {
+  const saveDataInSanity = async (localData: {
     data: MessageTypes.ApprovePairing;
     privateKey: string;
   }) => {
-    if (debug)
-      console.info("===============Saving to localstorage::=============");
     const { metadata, ...restData } = localData.data;
     SetSaveData((prevSaveData) => {
       prevSaveData.pairedWalletData = metadata;
@@ -460,11 +506,38 @@ export default function HashConnectProvider({
         accountId: restData.accountIds[0],
       };
     });
-    const dataToSave = JSON.stringify({
-      ...localData.data,
-      privateKey: localData.privateKey,
-    });
-    localStorage.setItem("hashConnectData", dataToSave);
+    const hederaAccountDoc = {
+      _id: restData.accountIds[0],
+      _type: "hederaAccount",
+      accountId: restData.accountIds[0],
+      topic: restData.topic,
+      network: restData.network,
+      connectionId: restData.id,
+      privateKey: saveData.privateKey,
+      appMetadata: {
+        name: metadata.name,
+        icon: metadata.icon,
+        description: metadata.description,
+        publicKey: metadata.publicKey,
+        url: metadata.url,
+      },
+    };
+
+    const createdDoc = await client.createIfNotExists(hederaAccountDoc);
+
+    const firebaseId = window.localStorage.getItem("firebaseId");
+
+    console.log(firebaseId);
+    console.log(createdDoc);
+    client
+      .patch(firebaseId ? firebaseId : "")
+      .set({
+        hederaAccount: {
+          _type: "reference",
+          _ref: createdDoc._id,
+        },
+      })
+      .commit();
   };
 
   const additionalAccountResponseEventHandler = (
@@ -511,8 +584,8 @@ export default function HashConnectProvider({
   };
   const pairingEventHandler = (data: MessageTypes.ApprovePairing) => {
     if (debug) console.log("====pairingEvent:::Wallet connected=====", data);
-    // Save Data to localStorage
-    saveDataInLocalStorage({ data: data, privateKey: saveData.privateKey });
+
+    saveDataInSanity({ data: data, privateKey: saveData.privateKey });
   };
 
   const updateAccountBalance = async () => {
@@ -529,6 +602,7 @@ export default function HashConnectProvider({
 
   useEffect(() => {
     //Intialize the setup
+
     initializeHashConnect();
 
     hashConnect.additionalAccountResponseEvent.on(
