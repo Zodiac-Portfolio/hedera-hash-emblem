@@ -17,7 +17,6 @@ import axios from "axios";
 import { client } from "../lib/sanity";
 import { getNFTCollection, getNFTId, Utf8ArrayToStr } from "./utils/nftUtils";
 import { IPFSMetadata, MintItem, NFTInfoObject, SaveData } from "./utils/types";
-import { useAuth } from "./AuthProvider";
 
 const HASPACK_METADATA = {
   name: "HashPack",

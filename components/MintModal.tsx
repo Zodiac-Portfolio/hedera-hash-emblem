@@ -1,7 +1,6 @@
 import Image from "next/image";
 
-import React, { useEffect } from "react";
-import { useHashConnect } from "../context/HashConnectAPIProvider";
+import React from "react";
 import { MintItem } from "../context/utils/types";
 
 type PropsType = {
