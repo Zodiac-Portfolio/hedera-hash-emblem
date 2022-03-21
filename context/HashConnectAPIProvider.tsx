@@ -133,18 +133,46 @@ const APP_CONFIG: HashConnectTypes.AppMetadata = {
   icon: "https://ipfs/io/QmejTXvhAcRbEsXcS6jXG8ckFLFvoXzz18iGLyVE8ZvZ27",
 };
 
-const loadLocalData = (): null | SaveData => {
-  const foundData = localStorage.getItem("hashConnectData");
+const loadLocalData = async (): Promise<null | SaveData> => {
+  const firebaseId = window.localStorage.getItem("firebaseId");
 
-  if (foundData) {
-    const saveData: any = JSON.parse(foundData);
+  let sanityAccountData: any = null;
 
-    // setSaveData(saveData);
-    return {
-      ...saveData,
-      accountId: saveData.accountIds[0],
+  if (firebaseId) {
+    let query = `
+    *[_type=="account" && firebaseId=="${firebaseId}"]{
+      hederaAccount
+    }
+    `;
+
+    const sanityAccountDataReq = await client.fetch(query);
+
+    query = `
+    *[_type=="hederaAccount" && accountId=="${sanityAccountDataReq[0].hederaAccount._ref}"]{
+      accountId,
+      topic,
+      connectionId,
+      network,
+      privateKey,
+      appMetadata
+    }
+    `;
+
+    const sanityHederaDataReq = await client.fetch(query);
+
+    sanityAccountData = {
+      accountId: sanityHederaDataReq[0].accountId,
+      accountIds: [sanityHederaDataReq[0].accountId],
+      id: sanityHederaDataReq[0].connectionId,
+      network: sanityHederaDataReq[0].network,
+      privateKey: sanityHederaDataReq[0].privateKey,
+      topic: sanityHederaDataReq[0].topic,
+      pairedWalletData: null,
+      hbarBalance: 0,
+      usdBalance: 0,
     };
-  } else return null;
+  }
+  return sanityAccountData;
 };
 
 const loadDetailItem = (): null | MintItem => {
@@ -182,10 +210,6 @@ export const getHbarBalance = async (account: AccountId): Promise<string> => {
     .setAccountId(account)
     .execute(hashClient);
 
-  console.log(
-    "The account balance is" + getNewBalance.hbars.toString() + " tinybar."
-  );
-
   return getNewBalance.hbars.toString();
 };
 
@@ -203,8 +227,6 @@ export default function HashConnectProvider({
   const [nftInfo] = useState<Array<NFTInfoObject> | null>(null);
   const [installedExtensions, setInstalledExtensions] =
     useState<HashConnectTypes.WalletMetadata | null>(null);
-
-  const { authUser } = useAuth();
 
   const sendTransaction = async (
     trans: Uint8Array,
@@ -226,7 +248,7 @@ export default function HashConnectProvider({
   const sendNft = async (_saveData: SaveData | null) => {
     const nftInfoQuery = await getNFTInfo();
     const account = _saveData?.accountId;
-
+    console.log(_saveData);
     if (!account) {
       // eslint-disable-next-line no-throw-literal
       throw "ERROR";
@@ -408,7 +430,6 @@ export default function HashConnectProvider({
       `;
 
       const sanityAccountDataReq = await client.fetch(query);
-      console.log(sanityAccountDataReq[0].hederaAccount);
 
       query = `
       *[_type=="hederaAccount" && accountId=="${sanityAccountDataReq[0].hederaAccount._ref}"]{
@@ -422,7 +443,6 @@ export default function HashConnectProvider({
       `;
 
       const sanityHederaDataReq = await client.fetch(query);
-      console.log(sanityHederaDataReq[0]);
 
       sanityAccountData = {
         accountId: sanityHederaDataReq[0].accountId,
@@ -527,8 +547,6 @@ export default function HashConnectProvider({
 
     const firebaseId = window.localStorage.getItem("firebaseId");
 
-    console.log(firebaseId);
-    console.log(createdDoc);
     client
       .patch(firebaseId ? firebaseId : "")
       .set({
@@ -561,7 +579,7 @@ export default function HashConnectProvider({
     if (debug) console.debug("====Transaction data====", data);
 
     if (data.success) {
-      const _saveData = loadLocalData();
+      const _saveData = await loadLocalData();
       const _detailItem = loadDetailItem();
 
       const tokenId = _detailItem?._id;

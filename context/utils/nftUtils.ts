@@ -66,7 +66,6 @@ export const getNFTId = (serialNumber: number): NftId => {
 export const getMyNFTs = async (
   accountId: string
 ): Promise<NFTInfoObject[]> => {
-  console.log(accountId);
   const query = `
   *[_type=="mintedNfts" && mintedBy=="${accountId}"]{
     serial,

@@ -1,6 +1,7 @@
 import Image from "next/image";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { useHashConnect } from "../context/HashConnectAPIProvider";
 import { MintItem } from "../context/utils/types";
 
 type PropsType = {
@@ -24,6 +25,7 @@ function MintModal(props: PropsType) {
     props.setLoadingAction(false);
     props.closeModal();
   };
+
   return (
     <>
       {props.open && (

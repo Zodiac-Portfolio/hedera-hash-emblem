@@ -66,7 +66,6 @@ function App() {
   useEffect(() => {
     if (authUser.firebaseId !== "" && walletData.accountId !== "") {
       getMyNFTs(walletData.accountId).then((res: NFTInfoObject[]) => {
-        console.log(res);
         setMyItems(res);
       });
       updateAccountBalance();
@@ -76,7 +75,6 @@ function App() {
   useEffect(() => {
     if (authUser.firebaseId !== "" && walletData.accountId !== "") {
       getMyNFTs(walletData.accountId).then((res: NFTInfoObject[]) => {
-        console.log(res);
         setMyItems(res);
         updateAccountBalance();
       });

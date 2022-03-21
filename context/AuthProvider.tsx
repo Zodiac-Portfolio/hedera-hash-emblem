@@ -59,7 +59,6 @@ export function AuthUserProvider({ children }: { children: any }) {
         let resultUser;
         client.fetch(query).then((res) => {
           if (res) {
-            console.log(res);
             resultUser = {
               firebaseId: sesionUser.uid,
               email: sesionUser.email,
