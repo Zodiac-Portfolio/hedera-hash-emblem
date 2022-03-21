@@ -19,6 +19,8 @@ function App() {
     completedAction,
     setCompletedAction,
     updateAccountBalance,
+    associateCollection,
+    connect,
   } = useHashConnect();
   const [availibleForMint, setAvailibleForMint] = useState<MintItem[]>([]);
   const [showConnectionModal, setShowConnectionModal] = useState(false);
@@ -97,6 +99,7 @@ function App() {
               &mdash; Fight against War &mdash;
             </p>
           </div>
+
           {authUser.firebaseId === "" ? (
             <div className=" text-white flex-col justify-center items-center w-2/3 lg:w-1/3">
               <p className="start_journey_text">
@@ -111,17 +114,40 @@ function App() {
               </p>
             </div>
           ) : (
-            <div className="flex flex-wrap w-full gap-10 items-center justify-center">
-              {availibleForMint?.map((item) => {
-                return (
-                  <MintCard
-                    walletData={walletData}
-                    key={Math.random() * 1000}
-                    item={item}
-                    handleShowModal={() => handleShowMintModal(item)}
-                  />
-                );
-              })}
+            <div>
+              {!authUser.hederaAccount?.accountId ? (
+                <button
+                  className="text-white border border-gray-600 rounded-lg p-4 hover:text-gray-400 hover:border-gray-800"
+                  onClick={() => connect()}
+                >
+                  Link your account with HashPack
+                </button>
+              ) : (
+                <>
+                  {!authUser.associatedCollection ? (
+                    <button
+                      className="text-white border border-gray-600 rounded-lg  hover:text-gray-400 hover:border-gray-800"
+                      onClick={() => associateCollection()}
+                    >
+                      Asociate NFT Collection to your wallet
+                    </button>
+                  ) : (
+                    <div className="flex flex-wrap w-full gap-10 items-center justify-center">
+                      {" "}
+                      {availibleForMint?.map((item) => {
+                        return (
+                          <MintCard
+                            walletData={walletData}
+                            key={Math.random() * 1000}
+                            item={item}
+                            handleShowModal={() => handleShowMintModal(item)}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>

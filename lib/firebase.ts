@@ -8,6 +8,7 @@ import {
 } from "firebase/auth";
 
 import { useState, useEffect } from "react";
+import { FirebaseUser } from "../context/utils/types";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -26,14 +27,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-export type FirebaseUser = {
-  firebaseId: string;
-  email: string;
-  alias: string;
-  profileImage: string;
-  hederaAccount: object;
-};
-
 const formatAuthUser = (user: FirebaseUser) => user;
 
 function useFirebaseAuth() {
@@ -43,6 +36,7 @@ function useFirebaseAuth() {
     alias: "",
     profileImage: "",
     hederaAccount: {},
+    associatedCollection: false,
   });
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -72,6 +66,7 @@ function useFirebaseAuth() {
         alias: "",
         profileImage: "",
         hederaAccount: {},
+        associatedCollection: false,
       });
       setLoading(false);
       return;

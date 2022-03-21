@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { createContext, useContext, useEffect, useState } from "react";
-import { FirebaseUser, useFirebaseAuth } from "../lib/firebase";
+import { useFirebaseAuth } from "../lib/firebase";
 import { client } from "../lib/sanity";
+import { FirebaseUser } from "./utils/types";
 
 const AuthUserContext = createContext({
   authUser: {
@@ -9,7 +10,10 @@ const AuthUserContext = createContext({
     email: "",
     alias: "",
     profileImage: "",
-    hederaAccount: {},
+    hederaAccount: {
+      accountId: "",
+    },
+    associatedCollection: false,
   },
   loading: false,
   signInWithPassword: (email: string, password: string) => {},
@@ -28,7 +32,10 @@ export function AuthUserProvider({ children }: { children: any }) {
           email: "",
           alias: "",
           profileImage: "",
-          hederaAccount: {},
+          hederaAccount: {
+            accountId: "",
+          },
+          associatedCollection: false,
         }
   );
 
@@ -56,7 +63,7 @@ export function AuthUserProvider({ children }: { children: any }) {
         }
         `;
 
-        let resultUser;
+        let resultUser: FirebaseUser;
         client.fetch(query).then((res) => {
           if (res) {
             resultUser = {
@@ -65,8 +72,27 @@ export function AuthUserProvider({ children }: { children: any }) {
               alias: res[0].alias,
               profileImage: res[0].profileImage,
               hederaAccount: res[0].hederaAccount,
+              associatedCollection: res[0].assciatedCollection,
             };
-            setFirebaseUser(resultUser);
+
+            const hederaAccountQuery = `
+            *[_type=="hederaAccount" && accountId=="${res[0].hederaAccount._ref}"]{
+              accountId,
+              topic,
+              connectionId,
+              network,
+              privateKey,
+              appMetadata
+            }
+            
+            `;
+            console.log(resultUser);
+            client.fetch(hederaAccountQuery).then((res) => {
+              if (res) {
+                resultUser.hederaAccount = res[0];
+              }
+              setFirebaseUser(resultUser);
+            });
           }
         });
       }

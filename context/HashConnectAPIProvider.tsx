@@ -390,14 +390,15 @@ export default function HashConnectProvider({
     const assTrans = new TokenAssociateTransaction()
       .setAccountId(AccountId.fromString(signingAcct))
       .setTokenIds([getNFTCollection()]);
-    const privateKey = saveData?.privateKey;
+
     const transactionBytes: Uint8Array = await signAndMakeBytes(
       assTrans,
-      signingAcct,
-      privateKey
+      signingAcct
     );
 
-    await sendTransaction(transactionBytes, signingAcct, false);
+    window.localStorage.setItem("transactionAction", "2");
+
+    await sendTransaction(transactionBytes, signingAcct, true);
   };
 
   const buildMintNftTransaction = async () => {
@@ -442,6 +443,7 @@ export default function HashConnectProvider({
       `;
 
       const sanityHederaDataReq = await client.fetch(query);
+
       if (sanityAccountDataReq[0] && sanityHederaDataReq[0])
         sanityAccountData = {
           accountId: sanityHederaDataReq[0].accountId,
@@ -577,26 +579,44 @@ export default function HashConnectProvider({
   ) => {
     if (debug) console.debug("====Transaction data====", data);
 
+    const transactionAction = window.localStorage.getItem("transactionAction");
+    let _saveData;
     if (data.success) {
-      const _saveData = await loadLocalData();
-      const _detailItem = loadDetailItem();
+      if (transactionAction) {
+        switch (transactionAction) {
+          case "1":
+            //Mint Action
+            _saveData = await loadLocalData();
+            const _detailItem = loadDetailItem();
 
-      const tokenId = _detailItem?._id;
+            const tokenId = _detailItem?._id;
 
-      if (!tokenId) {
-        throw "ERROE";
+            if (!tokenId) {
+              throw "ERROE";
+            }
+            await client
+              .patch(_detailItem?._id.toString())
+              .dec({ supply: 1 })
+              .commit();
+
+            await mintNft(_saveData, _detailItem);
+            await sendNft(_saveData);
+            break;
+          case "2":
+            //Asociate Collection Action
+            _saveData = await loadLocalData();
+
+            const userId = window.localStorage.getItem("firebaseId");
+            await client
+              .patch(userId ? userId : "")
+              .set({ asociatedCollection: true })
+              .commit();
+
+            break;
+          default:
+            break;
+        }
       }
-      await client
-        .patch(_detailItem?._id.toString())
-        .dec({ supply: 1 })
-        .commit();
-
-      await mintNft(_saveData, _detailItem);
-      await sendNft(_saveData);
-
-      console.log();
-
-      //UPDATE BALANCE
     }
   };
   const pairingEventHandler = (data: MessageTypes.ApprovePairing) => {

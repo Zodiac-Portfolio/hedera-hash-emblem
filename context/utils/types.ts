@@ -51,3 +51,12 @@ export type MintItem = {
   metadata: string;
   supply: number;
 };
+
+export type FirebaseUser = {
+  firebaseId: string;
+  email: string;
+  alias: string;
+  profileImage: string;
+  hederaAccount: any;
+  associatedCollection: boolean;
+};

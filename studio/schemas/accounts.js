@@ -25,6 +25,12 @@ export const accountsSchema = {
       type: "string",
     },
     {
+      name: "associatedCollection",
+      title: "Has Asociated Collection",
+      type: "boolean",
+      initialValue: false,
+    },
+    {
       name: "hederaAccount",
       title: "Linked Hedera account",
       type: "reference",
