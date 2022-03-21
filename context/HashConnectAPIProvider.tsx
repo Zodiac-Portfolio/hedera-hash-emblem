@@ -442,18 +442,18 @@ export default function HashConnectProvider({
       `;
 
       const sanityHederaDataReq = await client.fetch(query);
-
-      sanityAccountData = {
-        accountId: sanityHederaDataReq[0].accountId,
-        accountIds: [sanityHederaDataReq[0].accountId],
-        id: sanityHederaDataReq[0].connectionId,
-        network: sanityHederaDataReq[0].network,
-        privateKey: sanityHederaDataReq[0].privateKey,
-        topic: sanityHederaDataReq[0].topic,
-        pairedWalletData: null,
-        hbarBalance: 0,
-        usdBalance: 0,
-      };
+      if (sanityAccountDataReq[0] && sanityHederaDataReq[0])
+        sanityAccountData = {
+          accountId: sanityHederaDataReq[0].accountId,
+          accountIds: [sanityHederaDataReq[0].accountId],
+          id: sanityHederaDataReq[0].connectionId,
+          network: sanityHederaDataReq[0].network,
+          privateKey: sanityHederaDataReq[0].privateKey,
+          topic: sanityHederaDataReq[0].topic,
+          pairedWalletData: null,
+          hbarBalance: 0,
+          usdBalance: 0,
+        };
     }
 
     //Fetch account from sanity, if no account simple
