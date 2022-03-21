@@ -26,8 +26,9 @@ export const accountsSchema = {
     },
     {
       name: "hederaAccount",
-      title: "Hedera Account",
-      type: "string",
+      title: "Linked Hedera account",
+      type: "reference",
+      to: [{ type: "hederaAccount" }],
     },
   ],
 };

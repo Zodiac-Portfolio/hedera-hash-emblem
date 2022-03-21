@@ -9,7 +9,7 @@ const AuthUserContext = createContext({
     email: "",
     alias: "",
     profileImage: "",
-    hederaAccount: "",
+    hederaAccount: {},
   },
   loading: false,
   signInWithPassword: (email: string, password: string) => {},
@@ -28,7 +28,7 @@ export function AuthUserProvider({ children }: { children: any }) {
           email: "",
           alias: "",
           profileImage: "",
-          hederaAccount: "",
+          hederaAccount: {},
         }
   );
 
@@ -43,7 +43,7 @@ export function AuthUserProvider({ children }: { children: any }) {
 
     if (usrString) {
       const sesionUser: any = JSON.parse(usrString);
-      console.log(sesionUser);
+
       if (sesionUser) {
         const query = `
         *[_type=="account" && firebaseId=="${sesionUser.uid}"]{
@@ -61,7 +61,7 @@ export function AuthUserProvider({ children }: { children: any }) {
           if (res) {
             console.log(res);
             resultUser = {
-              firebaseId: sesionUser.firebaseId,
+              firebaseId: sesionUser.uid,
               email: sesionUser.email,
               alias: res[0].alias,
               profileImage: res[0].profileImage,

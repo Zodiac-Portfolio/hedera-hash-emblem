@@ -40,18 +40,20 @@ function ConnectionModal(props: PropsType) {
         password
       );
       const doc = {
+        _id: userCreated.user.uid,
         _type: "account",
         firebaseId: userCreated.user.uid,
         email: email,
         alias: alias,
         profileImage: `https://avatars.dicebear.com/api/adventurer/${alias}.svg`,
-        hederaAccount: "",
+        hederaAccount: {},
       };
-      const createdDoc = await client.create(doc);
+      const createdDoc = await client.createIfNotExists(doc);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _id, _createdAt, _rev, _type, _updatedAt, ...restData } =
         createdDoc;
       updateFirebaseUser(restData);
+      window.localStorage.setItem("firebaseId", userCreated.user.uid);
       window.location.reload();
     });
   };
@@ -91,6 +93,10 @@ function ConnectionModal(props: PropsType) {
             hederaAccount: sanityAccount[0].hederaAccount,
           };
           updateFirebaseUser(resultUser);
+          window.localStorage.setItem(
+            "firebaseId",
+            sanityAccount[0].firebaseId
+          );
         }
         props.closeModal();
         return userCreated;
