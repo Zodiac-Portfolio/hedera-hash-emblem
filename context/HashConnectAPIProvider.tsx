@@ -399,7 +399,7 @@ export default function HashConnectProvider({
 
     window.localStorage.setItem("transactionAction", "2");
 
-    await sendTransaction(transactionBytes, signingAcct, true);
+    await sendTransaction(transactionBytes, signingAcct, false);
   };
 
   const buildMintNftTransaction = async () => {
@@ -412,6 +412,7 @@ export default function HashConnectProvider({
       trans,
       signingAcct
     );
+    window.localStorage.setItem("transactionAction", "1");
     await sendTransaction(transactionBytes, signingAcct, false);
   };
 
