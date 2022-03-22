@@ -3,8 +3,7 @@ import Image from "next/image";
 import React from "react";
 import { RiCloseCircleFill } from "react-icons/ri";
 import { useHashConnect } from "../context/HashConnectAPIProvider";
-import { NFTInfoObject, SaveData } from "../context/utils/types";
-import { FirebaseUser } from "../lib/firebase";
+import { FirebaseUser, NFTInfoObject, SaveData } from "../context/utils/types";
 import MyItemCard from "./MyItemCard";
 
 export const hashPackLoader = () => {
