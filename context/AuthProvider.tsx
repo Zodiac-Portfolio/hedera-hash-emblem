@@ -59,12 +59,14 @@ export function AuthUserProvider({ children }: { children: any }) {
           firebaseId,
           alias,
           profileImage,
-          hederaAccount
+          hederaAccount,
+          associatedCollection
         }
         `;
 
         let resultUser: FirebaseUser;
         client.fetch(query).then((res) => {
+          console.log(res);
           if (res) {
             resultUser = {
               firebaseId: sesionUser.uid,
@@ -72,7 +74,7 @@ export function AuthUserProvider({ children }: { children: any }) {
               alias: res[0].alias,
               profileImage: res[0].profileImage,
               hederaAccount: res[0].hederaAccount,
-              associatedCollection: res[0].assciatedCollection,
+              associatedCollection: res[0].associatedCollection,
             };
 
             const hederaAccountQuery = `
