@@ -47,6 +47,7 @@ function ConnectionModal(props: PropsType) {
         alias: alias,
         profileImage: `https://avatars.dicebear.com/api/adventurer/${alias}.svg`,
         hederaAccount: {},
+        associatedCollection: false,
       };
       const createdDoc = await client.createIfNotExists(doc);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -91,6 +92,7 @@ function ConnectionModal(props: PropsType) {
             alias: sanityAccount[0].alias,
             profileImage: sanityAccount[0].profileImg,
             hederaAccount: sanityAccount[0].hederaAccount,
+            associatedCollection: sanityAccount[0].associatedCollection,
           };
           updateFirebaseUser(resultUser);
           window.localStorage.setItem(
