@@ -127,7 +127,7 @@ function App() {
                   {!authUser.associatedCollection &&
                   !walletData.associatedCollection ? (
                     <button
-                      className="text-white border border-gray-600 rounded-lg  hover:text-gray-400 hover:border-gray-800"
+                      className="text-white border border-gray-600 rounded-lg p-4  hover:text-gray-400 hover:border-gray-800"
                       onClick={() => associateCollection()}
                     >
                       Asociate NFT Collection to your wallet
