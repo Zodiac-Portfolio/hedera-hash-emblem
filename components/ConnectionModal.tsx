@@ -211,7 +211,6 @@ function ConnectionModal(props: PropsType) {
                 <div>
                   <a
                     className="inline-block align-baseline font-bold text-sm text-orange-500  hover:text-orange-800"
-                    href="#"
                     onClick={() => setIsLogin(!isLogin)}
                   >
                     {isLogin

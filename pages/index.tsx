@@ -124,7 +124,7 @@ function App() {
                 </button>
               ) : (
                 <>
-                  {!walletData.associatedCollection &&
+                  {!walletData.associatedCollection ||
                   !authUser.associatedCollection ? (
                     <button
                       className="text-white border border-gray-600 rounded-lg  hover:text-gray-400 hover:border-gray-800"
