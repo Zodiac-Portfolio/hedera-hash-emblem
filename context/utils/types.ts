@@ -25,6 +25,7 @@ export interface SaveData {
   pairedAccounts: string[];
   netWork?: string;
   id?: string;
+  associatedCollection: boolean;
   accountId: string;
   hbarBalance: number;
   usdBalance: number;

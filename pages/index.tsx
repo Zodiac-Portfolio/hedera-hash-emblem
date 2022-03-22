@@ -115,7 +115,7 @@ function App() {
             </div>
           ) : (
             <div>
-              {!authUser.hederaAccount?.accountId ? (
+              {!walletData?.accountId ? (
                 <button
                   className="text-white border border-gray-600 rounded-lg p-4 hover:text-gray-400 hover:border-gray-800"
                   onClick={() => connect()}
@@ -124,7 +124,8 @@ function App() {
                 </button>
               ) : (
                 <>
-                  {!authUser.associatedCollection ? (
+                  {!walletData.associatedCollection &&
+                  !authUser.associatedCollection ? (
                     <button
                       className="text-white border border-gray-600 rounded-lg  hover:text-gray-400 hover:border-gray-800"
                       onClick={() => associateCollection()}

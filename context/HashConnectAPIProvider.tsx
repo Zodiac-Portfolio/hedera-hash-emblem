@@ -124,6 +124,7 @@ const INITIAL_SAVE_DATA: SaveData = {
   accountId: "",
   hbarBalance: 10,
   usdBalance: 10 * 0.2,
+  associatedCollection: false,
 };
 
 const APP_CONFIG: HashConnectTypes.AppMetadata = {
@@ -612,6 +613,11 @@ export default function HashConnectProvider({
               .set({ associatedCollection: true })
               .commit();
 
+            SetSaveData((prevData) => ({
+              ...prevData,
+              associatedCollection: true,
+            }));
+
             break;
           default:
             break;
@@ -656,6 +662,8 @@ export default function HashConnectProvider({
     if (debug) console.log("Pairing String::", saveData.pairingString);
 
     hashConnect.connectToLocalWallet(saveData.pairingString);
+
+    //Actualizar el estado
   };
 
   return (
