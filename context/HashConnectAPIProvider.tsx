@@ -609,7 +609,7 @@ export default function HashConnectProvider({
             const userId = window.localStorage.getItem("firebaseId");
             await client
               .patch(userId ? userId : "")
-              .set({ asociatedCollection: true })
+              .set({ associatedCollection: true })
               .commit();
 
             break;
