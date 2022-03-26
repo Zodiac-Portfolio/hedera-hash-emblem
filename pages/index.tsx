@@ -134,10 +134,10 @@ function App() {
                     </button>
                   ) : (
                     <div className="flex flex-wrap w-full gap-10 items-center justify-center">
-                      {" "}
                       {availibleForMint?.map((item) => {
                         return (
                           <MintCard
+                            userOwnedNfts={myItems}
                             walletData={walletData}
                             key={Math.random() * 1000}
                             item={item}

@@ -1,14 +1,29 @@
 import React from "react";
-import { MintItem, SaveData } from "../context/utils/types";
+import { MintItem, NFTInfoObject, SaveData } from "../context/utils/types";
 
 type PropsType = {
   item: MintItem;
   handleShowModal: (arg0: MintItem) => void;
   walletData: SaveData;
+  userOwnedNfts: NFTInfoObject[];
 };
 
 export default function MintCard(props: PropsType): JSX.Element {
   const { item } = props;
+
+  const hasOwnedItem = () => {
+    const nftName = item.name;
+
+    const ownedItem = props.userOwnedNfts.find(
+      (_item) => _item.metadata.name === nftName
+    );
+
+    if (ownedItem) {
+      return true;
+    } else {
+      return false;
+    }
+  };
   return (
     <div
       key={`${item.name}-${item.supply}`}
@@ -30,12 +45,16 @@ export default function MintCard(props: PropsType): JSX.Element {
               <div className="text-sm text-gray-400">Minting Price</div>
               <div className="text-lg">1 HBAR</div>
             </div>
-            <button
-              className="rounded-xl w-fit py-3 px-3 bg-orange-800 text-white"
-              onClick={() => props.handleShowModal(item)}
-            >
-              Mint NFT
-            </button>
+            {!hasOwnedItem() ? (
+              <button
+                className="rounded-xl w-fit py-3 px-3 bg-orange-800 text-white"
+                onClick={() => props.handleShowModal(item)}
+              >
+                Mint NFT
+              </button>
+            ) : (
+              <div>Item Owned!</div>
+            )}
           </div>
         )}
       </div>

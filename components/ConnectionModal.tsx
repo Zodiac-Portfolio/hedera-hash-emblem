@@ -32,13 +32,33 @@ function ConnectionModal(props: PropsType) {
   const [alias, setAlias] = useState("");
   const { updateFirebaseUser } = useAuth();
 
+  //Register errors
+  const [emailInUseError, setEmailinUseError] = useState(false);
+  const [emailFormatError, setEmailFormatError] = useState(false);
+  const [aliasError, setAliasError] = useState(false);
+  const [paswordError, setPasswordError] = useState(false);
+
+  const [emailNotExistsError, setEmailNotExistsError] = useState(false);
+  const [invalidCredentialsError, setInvalidCredentialsError] = useState(false);
+
+  const cleanState = () => {
+    setEmail("");
+    setPassword("");
+    setAlias("");
+    setEmailFormatError(false);
+    setAliasError(false);
+    setEmailinUseError(false);
+    setPasswordError(false);
+  };
   const requestCreateAccount = async () => {
-    setPersistence(getAuth(), browserLocalPersistence).then(async () => {
+    //Check username has less than 12 letters and no straneg chars
+    try {
       const userCreated = await createUserWithEmailAndPassword(
         getAuth(),
         email,
         password
       );
+
       const doc = {
         _id: userCreated.user.uid,
         _type: "account",
@@ -55,24 +75,31 @@ function ConnectionModal(props: PropsType) {
         createdDoc;
       updateFirebaseUser(restData);
       window.localStorage.setItem("firebaseId", userCreated.user.uid);
-      window.location.reload();
-    });
+      cleanState();
+      props.closeModal();
+    } catch (e) {
+      const error: any = e;
+      if (error.code === "auth/email-already-in-use") {
+        setEmailinUseError(true);
+      }
+    }
   };
   const requestSignIn = async () => {
     setPersistence(getAuth(), browserLocalPersistence)
       .then(async () => {
-        // Existing and future Auth states are now persisted in the current
-        // session only. Closing the window would clear any existing state even
-        // if a user forgets to sign out.
-        // ...
-        // New sign-in will be persisted with session persistence.
-        const userCreated = await signInWithEmailAndPassword(
-          getAuth(),
-          email,
-          password
-        );
+        try {
+          // Existing and future Auth states are now persisted in the current
+          // session only. Closing the window would clear any existing state even
+          // if a user forgets to sign out.
+          // ...
+          // New sign-in will be persisted with session persistence.
+          const userCreated = await signInWithEmailAndPassword(
+            getAuth(),
+            email,
+            password
+          );
 
-        const query = `
+          const query = `
         *[_type=="account" && firebaseId=="${userCreated.user.uid}"]{
           alias,
           email,
@@ -83,31 +110,100 @@ function ConnectionModal(props: PropsType) {
         }
         `;
 
-        let resultUser;
-        const sanityAccount = await client.fetch(query);
-        if (sanityAccount) {
-          resultUser = {
-            firebaseId: sanityAccount[0].firebaseId,
-            email: email,
-            alias: sanityAccount[0].alias,
-            profileImage: sanityAccount[0].profileImg,
-            hederaAccount: sanityAccount[0].hederaAccount,
-            associatedCollection: sanityAccount[0].associatedCollection,
-          };
-          updateFirebaseUser(resultUser);
-          window.localStorage.setItem(
-            "firebaseId",
-            sanityAccount[0].firebaseId
-          );
+          let resultUser;
+          const sanityAccount = await client.fetch(query);
+          if (sanityAccount) {
+            resultUser = {
+              firebaseId: sanityAccount[0].firebaseId,
+              email: email,
+              alias: sanityAccount[0].alias,
+              profileImage: sanityAccount[0].profileImg,
+              hederaAccount: sanityAccount[0].hederaAccount,
+              associatedCollection: sanityAccount[0].associatedCollection,
+            };
+            updateFirebaseUser(resultUser);
+            window.localStorage.setItem(
+              "firebaseId",
+              sanityAccount[0].firebaseId
+            );
+          }
+          props.closeModal();
+          return userCreated;
+        } catch (e) {
+          const error: any = e;
+          if (error.code === "auth/user-not-found") {
+            setEmailNotExistsError(true);
+          } else if (error.code === "auth/wrong-password") {
+            setInvalidCredentialsError(true);
+          }
         }
-        props.closeModal();
-        return userCreated;
       })
 
       .catch((error) => {
         // Handle Errors here.
         console.log(error);
       });
+  };
+
+  const handleChangeAlias = (_alias: string) => {
+    const regexTest = /^[a-zA-Z]+$/.test(_alias);
+
+    if (_alias !== "") {
+      if (regexTest) {
+        setAlias(_alias.slice(0, 12));
+        setAliasError(false);
+      } else {
+        setAlias(_alias.slice(0, 12));
+        setAliasError(true);
+      }
+    } else {
+      setAlias(_alias);
+      setAliasError(false);
+    }
+  };
+
+  const handleEmailChange = (_email: string) => {
+    if (!isLogin) {
+      const regexTest =
+        /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i.test(
+          _email
+        );
+
+      if (regexTest) {
+        setEmail(_email);
+        setEmailinUseError(false);
+        setEmailFormatError(false);
+      } else {
+        setEmail(_email);
+        setEmailFormatError(true);
+      }
+    } else {
+      setEmail(_email);
+    }
+    setInvalidCredentialsError(false);
+    setEmailNotExistsError(false);
+  };
+
+  const handlePasswordChange = (_pass: string) => {
+    if (!isLogin) {
+      if (_pass.length >= 8) {
+        setPassword(_pass);
+        setPasswordError(false);
+      } else {
+        setPassword(_pass);
+        setPasswordError(true);
+      }
+    } else {
+      setPassword(_pass);
+    }
+    setInvalidCredentialsError(false);
+    setEmailNotExistsError(false);
+  };
+
+  const blankInputs = () => {
+    return !isLogin
+      ? password === "" || email === "" || alias === ""
+      : password === "" || email === "";
   };
 
   return (
@@ -157,9 +253,20 @@ function ConnectionModal(props: PropsType) {
                       id="Email"
                       value={email}
                       type="email"
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => handleEmailChange(e.target.value)}
                       placeholder="satoshinakamoto@hashemblem.com"
                     />
+                    {(emailInUseError || emailFormatError) && !isLogin && (
+                      <div className=" mt-2 text-red-500">
+                        {emailInUseError && "Email is already being used!"}
+                        {emailFormatError && "Introduce a valid email!"}
+                      </div>
+                    )}
+                    {emailNotExistsError && isLogin && (
+                      <div className=" mt-2 text-red-500">
+                        {"No account registered with that email!"}
+                      </div>
+                    )}
                   </div>
                   <div className="mb-6 flex flex-col items-start ">
                     <div className="block text-gray-500 text-md font-bold mb-2">
@@ -167,34 +274,72 @@ function ConnectionModal(props: PropsType) {
                     </div>
 
                     <input
-                      className="shadow appearance-none border border-red-400 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
                       id="password"
                       type="password"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => handlePasswordChange(e.target.value)}
                       placeholder="******************"
                     />
+                    {paswordError && !isLogin && (
+                      <div className=" mt-2 text-red-500">
+                        {"Password must have atleast 8 characters!"}
+                      </div>
+                    )}
+                    {invalidCredentialsError && isLogin && (
+                      <div className=" mt-2 text-red-500">
+                        {"Invalid credentials!"}
+                      </div>
+                    )}
                   </div>
                   {!isLogin && (
                     <div className="mb-4 flex flex-col items-start">
                       <div className="block text-gray-500 text-md font-bold mb-2">
-                        Select a cool Alias. Max 12 letters!
+                        Select a cool Alias
                       </div>
                       <input
                         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                         id="username"
                         value={alias}
                         type="text"
-                        onChange={(e) => setAlias(e.target.value)}
+                        onChange={(e) => handleChangeAlias(e.target.value)}
                         placeholder="StshiNkmoto"
                       />
+                      {aliasError && !isLogin && (
+                        <div className=" mt-2 text-red-500">
+                          {aliasError &&
+                            "Alias can't contain special characters"}
+                        </div>
+                      )}
                     </div>
                   )}
                   <div className="flex gap-2 flex-col md:flex-row items-center justify-between">
                     <button
-                      className="bg-orange-700 hover:bg-orange-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                      disabled={aliasError}
+                      className={`text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${
+                        isLogin
+                          ? invalidCredentialsError ||
+                            emailNotExistsError ||
+                            blankInputs()
+                            ? "bg-gray-600 cursor-not-allowed"
+                            : "bg-orange-700 hover:bg-orange-800"
+                          : aliasError ||
+                            emailFormatError ||
+                            paswordError ||
+                            blankInputs()
+                          ? "bg-gray-600 cursor-not-allowed"
+                          : "bg-orange-700 hover:bg-orange-800"
+                      }`}
                       onClick={() =>
-                        isLogin ? requestSignIn() : requestCreateAccount()
+                        isLogin
+                          ? !invalidCredentialsError &&
+                            !emailNotExistsError &&
+                            requestSignIn()
+                          : !aliasError &&
+                            !emailInUseError &&
+                            !emailFormatError &&
+                            !blankInputs() &&
+                            requestCreateAccount()
                       }
                       type="button"
                     >
