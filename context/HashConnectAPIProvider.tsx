@@ -404,6 +404,7 @@ export default function HashConnectProvider({
 
   const buildMintNftTransaction = async () => {
     const signingAcct = saveData.accountId;
+    console.log(signingAcct);
     const trans = new TransferTransaction()
       .addHbarTransfer(signingAcct, new Hbar(-1))
       .addHbarTransfer("0.0.34031499", new Hbar(0.5))
