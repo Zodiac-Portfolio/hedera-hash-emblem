@@ -406,7 +406,8 @@ export default function HashConnectProvider({
     const signingAcct = saveData.accountId;
     const trans = new TransferTransaction()
       .addHbarTransfer(signingAcct, new Hbar(-1))
-      .addHbarTransfer("0.0.30909227", new Hbar(1));
+      .addHbarTransfer("0.0.34031499", new Hbar(0.5))
+      .addHbarTransfer("0.0.34031514", new Hbar(0.5));
 
     const transactionBytes: Uint8Array = await signAndMakeBytes(
       trans,
