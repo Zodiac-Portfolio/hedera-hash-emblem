@@ -35,6 +35,7 @@ function App() {
     metadata: "QmQUdcdfkuFbtvmd71TJLqPjruoRJ5jRErVZfYL58wamdS",
     supply: 5,
   });
+
   const [myItems, setMyItems] = useState<NFTInfoObject[]>([]);
 
   const handleShowMintModal = (item: MintItem) => {
